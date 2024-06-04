@@ -1,23 +1,38 @@
-use tfhe_0_6::{
-    core_crypto::commons::{
-        generators::DeterministicSeeder,
-        math::random::{ActivatedRandomGenerator, Seed},
-    },
-    shortint::{
-        engine::ShortintEngine,
-        gen_keys,
-        parameters::{
-            DecompositionBaseLog, DecompositionLevelCount, DynamicDistribution, GlweDimension,
-            LweDimension, PolynomialSize, StandardDev,
-        },
-        CarryModulus, Ciphertext, CiphertextModulus, ClassicPBSParameters, ClientKey,
-        EncryptionKeyChoice, MaxNoiseLevel, MessageModulus, PBSParameters, ShortintParameterSet,
-    },
+use std::{
+    fs::{self, File},
+    path::{Path, PathBuf},
+    str::FromStr,
 };
 
-use crate::{
-    generate::TfhersVersion, ShortintCiphertextTest, ShortintClientKeyTest, TestParameterSet,
+use serde::de::DeserializeOwned;
+use tfhe::shortint::{
+    parameters::{
+        DecompositionBaseLog, DecompositionLevelCount, DynamicDistribution, GlweDimension,
+        LweDimension, PolynomialSize, StandardDev,
+    },
+    CarryModulus, CiphertextModulus, ClassicPBSParameters, EncryptionKeyChoice, MaxNoiseLevel,
+    MessageModulus, PBSParameters, ShortintParameterSet,
 };
+
+use crate::{TestMetadata, TestParameterSet, DATA_DIR};
+
+pub fn dir_for_latest() -> PathBuf {
+    let mut path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
+    path.push(DATA_DIR);
+    path.push("latest");
+
+    path
+}
+
+pub fn load_versioned<Data: DeserializeOwned, P: AsRef<Path>>(path: P) -> Result<Data, ()> {
+    let file = File::open(path).map_err(|_| ())?;
+    ciborium::de::from_reader(file).map_err(|_| ())
+}
+
+pub fn load_metadata<P: AsRef<Path>>(path: P) -> Result<Vec<TestMetadata>, ()> {
+    let serialized = fs::read_to_string(path).map_err(|_| ())?;
+    ron::from_str(&serialized).map_err(|_| ())
+}
 
 impl From<TestParameterSet> for ShortintParameterSet {
     fn from(value: TestParameterSet) -> Self {
@@ -51,35 +66,5 @@ impl From<TestParameterSet> for ShortintParameterSet {
                 }
             },
         }))
-    }
-}
-
-pub struct V0_6;
-
-impl TfhersVersion for V0_6 {
-    type ShortintCiphertext = Ciphertext;
-    type ShortintClientKey = ClientKey;
-
-    const VERSION_NUMBER: &'static str = "0.6";
-
-    fn seed_prng(seed: u128) {
-        let mut seeder = DeterministicSeeder::<ActivatedRandomGenerator>::new(Seed(seed));
-        let engine = ShortintEngine::new_from_seeder(&mut seeder);
-
-        ShortintEngine::with_thread_local_mut(|local_engine| {
-            let _ = std::mem::replace(local_engine, engine);
-        });
-    }
-
-    fn gen_shortint_client_key(meta: ShortintClientKeyTest) -> Self::ShortintClientKey {
-        let (client_key, _server_key) = gen_keys(meta.parameters);
-        client_key
-    }
-
-    fn gen_shortint_ct(
-        meta: ShortintCiphertextTest,
-        key: &Self::ShortintClientKey,
-    ) -> Self::ShortintCiphertext {
-        key.encrypt(meta.clear_value)
     }
 }

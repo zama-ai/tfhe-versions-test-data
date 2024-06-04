@@ -1,8 +1,9 @@
 use std::{borrow::Cow, fs::create_dir_all, path::Path};
 
 use tfhe_versions_test_data::{
-    data_0_6::V0_6, dir_for_version, store_metadata, store_versioned, ShortintCiphertextTest,
-    ShortintClientKeyTest, TestMetadata, TestParameterSet, TfhersVersion,
+    data_0_6::V0_6,
+    generate::{dir_for_version, store_metadata, store_versioned, TfhersVersion},
+    ShortintCiphertextTest, ShortintClientKeyTest, TestMetadata, TestParameterSet,
 };
 
 const TEST_PARAMS: TestParameterSet = TestParameterSet {
