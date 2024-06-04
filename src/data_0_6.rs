@@ -1,48 +1,65 @@
-use std::{fs::create_dir_all, path::Path};
-
-use tfhe_0_6::shortint::{gen_keys, parameters::PARAM_MESSAGE_2_CARRY_2_KS_PBS};
-
-use crate::{
-    store_metadata, store_versioned, ShortintCiphertextTest, ShortintClientKeyTest, TestMetadata,
-    TestParameterSet,
+use tfhe_0_6::shortint::{
+    gen_keys,
+    parameters::{
+        DecompositionBaseLog, DecompositionLevelCount, DynamicDistribution, GlweDimension,
+        LweDimension, PolynomialSize, StandardDev,
+    },
+    CarryModulus, Ciphertext, CiphertextModulus, ClassicPBSParameters, ClientKey,
+    EncryptionKeyChoice, MaxNoiseLevel, MessageModulus, PBSParameters, ShortintParameterSet,
 };
 
-pub fn gen_data(dir: &Path) {
-    create_dir_all(dir).unwrap();
+use crate::{ShortintCiphertextTest, ShortintClientKeyTest, TestParameterSet, TfhersVersion};
 
-    // We generate a set of client/server key
-    let (client_key, _server_key) = gen_keys(PARAM_MESSAGE_2_CARRY_2_KS_PBS);
+impl From<TestParameterSet> for ShortintParameterSet {
+    fn from(value: TestParameterSet) -> Self {
+        Self::new_pbs_param_set(PBSParameters::PBS(ClassicPBSParameters {
+            lwe_dimension: LweDimension(value.lwe_dimension),
+            glwe_dimension: GlweDimension(value.glwe_dimension),
+            polynomial_size: PolynomialSize(value.polynomial_size),
+            lwe_noise_distribution: DynamicDistribution::new_gaussian_from_std_dev(StandardDev(
+                value.lwe_noise_gaussian_stddev,
+            )),
+            glwe_noise_distribution: DynamicDistribution::new_gaussian_from_std_dev(StandardDev(
+                value.glwe_noise_gaussian_stddev,
+            )),
+            pbs_base_log: DecompositionBaseLog(value.pbs_base_log),
+            pbs_level: DecompositionLevelCount(value.pbs_level),
+            ks_base_log: DecompositionBaseLog(value.ks_base_log),
+            ks_level: DecompositionLevelCount(value.ks_level),
+            message_modulus: MessageModulus(value.message_modulus),
+            carry_modulus: CarryModulus(value.carry_modulus),
+            max_noise_level: MaxNoiseLevel::new(value.max_noise_level),
+            log2_p_fail: value.log2_p_fail,
+            ciphertext_modulus: CiphertextModulus::try_new(value.ciphertext_modulus as u128)
+                .unwrap(),
+            encryption_key_choice: {
+                match &*value.encryption_key_choice {
+                    "big" => EncryptionKeyChoice::Big,
+                    "small" => EncryptionKeyChoice::Small,
+                    _ => panic!("Invalid encryption key choice"),
+                }
+            },
+        }))
+    }
+}
 
-    store_versioned(&client_key, dir.join("client_key.cbor"));
+pub struct V0_6;
 
-    let msg1 = 0;
-    let msg2 = 3;
+impl TfhersVersion for V0_6 {
+    type ShortintCiphertext = Ciphertext;
+    type ShortintClientKey = ClientKey;
 
-    // Create some init ciphertexts and another one which is the result of an homomoprhic op
-    let ct1 = client_key.encrypt(msg1);
-    let ct2 = client_key.encrypt(msg2);
+    const VERSION_NUMBER: &'static str = "0.6";
 
-    // Serialize them
-    store_versioned(&ct1, dir.join("ct1.cbor"));
-    store_versioned(&ct2, dir.join("ct2.cbor"));
+    fn gen_shortint_client_key(meta: ShortintClientKeyTest) -> Self::ShortintClientKey {
+        let (client_key, _server_key) = gen_keys(meta.parameters);
+        client_key
+    }
 
-    // store test metadata
-    let tests = vec![
-        TestMetadata::ShortintClientKey(ShortintClientKeyTest {
-            key_filename: "client_key.cbor".to_string(),
-            parameters: TestParameterSet::Message2Carry2KsPbs,
-        }),
-        TestMetadata::ShortintCiphertext(ShortintCiphertextTest {
-            key_filename: "client_key.cbor".to_string(),
-            ct_filename: "ct1.cbor".to_string(),
-            clear_value: msg1,
-        }),
-        TestMetadata::ShortintCiphertext(ShortintCiphertextTest {
-            key_filename: "client_key.cbor".to_string(),
-            ct_filename: "ct2.cbor".to_string(),
-            clear_value: msg2,
-        }),
-    ];
-
-    store_metadata(&tests, dir.join("shortint.ron"));
+    fn gen_shortint_ct(
+        meta: ShortintCiphertextTest,
+        key: &Self::ShortintClientKey,
+    ) -> Self::ShortintCiphertext {
+        key.encrypt(meta.clear_value)
+    }
 }

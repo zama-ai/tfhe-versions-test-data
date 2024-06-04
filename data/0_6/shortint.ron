@@ -1,1 +1,0 @@
-[ShortintClientKey((key_filename:"client_key.cbor",parameters:Message2Carry2KsPbs)),ShortintCiphertext((key_filename:"client_key.cbor",ct_filename:"ct1.cbor",clear_value:0)),ShortintCiphertext((key_filename:"client_key.cbor",ct_filename:"ct2.cbor",clear_value:3))]
