@@ -6,27 +6,24 @@ use tfhe_versions_test_data::{
 };
 
 const TEST_PARAMS: TestParameterSet = TestParameterSet {
-    lwe_dimension: 742,
+    lwe_dimension: 761,
     glwe_dimension: 1,
     polynomial_size: 2048,
-    lwe_noise_gaussian_stddev: 0.000007069849454709433,
-    glwe_noise_gaussian_stddev: 0.00000000000000029403601535432533,
+    lwe_noise_gaussian_stddev: 6.36835566258815e-06,
+    glwe_noise_gaussian_stddev: 3.1529322391500584e-16,
     pbs_base_log: 23,
     pbs_level: 1,
-    ks_base_log: 5,
-    ks_level: 3,
-    pfks_level: 1,
-    pfks_base_log: 23,
-    pfks_noise_gaussian_stddev: 0.00000000000000029403601535432533,
-    cbs_level: 0,
-    cbs_base_log: 0,
+    ks_base_log: 3,
+    ks_level: 5,
     message_modulus: 4,
-    ciphertext_modulus: 64,
     carry_modulus: 4,
     max_noise_level: 5,
     log2_p_fail: -40.05,
+    log2_ciphertext_modulus: 64,
     encryption_key_choice: Cow::Borrowed("big"),
 };
+
+const PRNG_SEED: u128 = 0xdeadbeef;
 
 const SHORTINT_CLIENTKEY_TEST: ShortintClientKeyTest = ShortintClientKeyTest {
     key_filename: Cow::Borrowed("client_key.cbor"),
@@ -49,22 +46,31 @@ fn gen_shortint_data<Vers: TfhersVersion>(dir: &Path) {
     // generate a client key
     let shortint_client_key = Vers::gen_shortint_client_key(SHORTINT_CLIENTKEY_TEST);
 
+    store_versioned(
+        &shortint_client_key,
+        dir.join(&*SHORTINT_CLIENTKEY_TEST.key_filename),
+    );
+
     // generate ciphertexts
     let ct1 = Vers::gen_shortint_ct(SHORTINT_CT1_TEST, &shortint_client_key);
     let ct2 = Vers::gen_shortint_ct(SHORTINT_CT2_TEST, &shortint_client_key);
 
-    store_versioned(&shortint_client_key, dir.join("client_key.cbor"));
-
     // Serialize them
-    store_versioned(&ct1, dir.join("ct1.cbor"));
-    store_versioned(&ct2, dir.join("ct2.cbor"));
+    store_versioned(&ct1, dir.join(&*SHORTINT_CT1_TEST.ct_filename));
+    store_versioned(&ct2, dir.join(&*SHORTINT_CT2_TEST.ct_filename));
 
-    let shortint_tests = vec![TestMetadata::ShortintClientKey(SHORTINT_CLIENTKEY_TEST)];
+    let shortint_tests = vec![
+        TestMetadata::ShortintClientKey(SHORTINT_CLIENTKEY_TEST),
+        TestMetadata::ShortintCiphertext(SHORTINT_CT1_TEST),
+        TestMetadata::ShortintCiphertext(SHORTINT_CT2_TEST),
+    ];
     // store test metadata
     store_metadata(&shortint_tests, dir.join("shortint.ron"));
 }
 
 fn gen_all_data<Vers: TfhersVersion>() {
+    Vers::seed_prng(PRNG_SEED);
+
     let dir = dir_for_version(Vers::VERSION_NUMBER);
     gen_shortint_data::<Vers>(&dir.join("shortint"))
 }

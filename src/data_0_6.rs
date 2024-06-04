@@ -1,11 +1,18 @@
-use tfhe_0_6::shortint::{
-    gen_keys,
-    parameters::{
-        DecompositionBaseLog, DecompositionLevelCount, DynamicDistribution, GlweDimension,
-        LweDimension, PolynomialSize, StandardDev,
+use tfhe_0_6::{
+    core_crypto::commons::{
+        generators::DeterministicSeeder,
+        math::random::{ActivatedRandomGenerator, Seed},
     },
-    CarryModulus, Ciphertext, CiphertextModulus, ClassicPBSParameters, ClientKey,
-    EncryptionKeyChoice, MaxNoiseLevel, MessageModulus, PBSParameters, ShortintParameterSet,
+    shortint::{
+        engine::ShortintEngine,
+        gen_keys,
+        parameters::{
+            DecompositionBaseLog, DecompositionLevelCount, DynamicDistribution, GlweDimension,
+            LweDimension, PolynomialSize, StandardDev,
+        },
+        CarryModulus, Ciphertext, CiphertextModulus, ClassicPBSParameters, ClientKey,
+        EncryptionKeyChoice, MaxNoiseLevel, MessageModulus, PBSParameters, ShortintParameterSet,
+    },
 };
 
 use crate::{ShortintCiphertextTest, ShortintClientKeyTest, TestParameterSet, TfhersVersion};
@@ -30,8 +37,10 @@ impl From<TestParameterSet> for ShortintParameterSet {
             carry_modulus: CarryModulus(value.carry_modulus),
             max_noise_level: MaxNoiseLevel::new(value.max_noise_level),
             log2_p_fail: value.log2_p_fail,
-            ciphertext_modulus: CiphertextModulus::try_new(value.ciphertext_modulus as u128)
-                .unwrap(),
+            ciphertext_modulus: CiphertextModulus::try_new_power_of_2(
+                value.log2_ciphertext_modulus,
+            )
+            .unwrap(),
             encryption_key_choice: {
                 match &*value.encryption_key_choice {
                     "big" => EncryptionKeyChoice::Big,
@@ -50,6 +59,15 @@ impl TfhersVersion for V0_6 {
     type ShortintClientKey = ClientKey;
 
     const VERSION_NUMBER: &'static str = "0.6";
+
+    fn seed_prng(seed: u128) {
+        let mut seeder = DeterministicSeeder::<ActivatedRandomGenerator>::new(Seed(seed));
+        let engine = ShortintEngine::new_from_seeder(&mut seeder);
+
+        ShortintEngine::with_thread_local_mut(|local_engine| {
+            let _ = std::mem::replace(local_engine, engine);
+        });
+    }
 
     fn gen_shortint_client_key(meta: ShortintClientKeyTest) -> Self::ShortintClientKey {
         let (client_key, _server_key) = gen_keys(meta.parameters);

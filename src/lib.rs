@@ -56,7 +56,7 @@ pub fn load_metadata<P: AsRef<Path>>(path: P) -> Result<Vec<TestMetadata>, ()> {
 /// of changes made into the  ParameterSet of tfhe-rs. The idea here is to define a type
 /// that is able to carry the information of the used parameters without using any tfhe-rs
 /// types.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TestParameterSet {
     pub lwe_dimension: usize,
     pub glwe_dimension: usize,
@@ -67,26 +67,21 @@ pub struct TestParameterSet {
     pub pbs_level: usize,
     pub ks_base_log: usize,
     pub ks_level: usize,
-    pub pfks_level: usize,
-    pub pfks_base_log: usize,
-    pub pfks_noise_gaussian_stddev: f64,
-    pub cbs_level: usize,
-    pub cbs_base_log: usize,
     pub message_modulus: usize,
-    pub ciphertext_modulus: usize,
+    pub log2_ciphertext_modulus: usize,
     pub carry_modulus: usize,
     pub max_noise_level: usize,
     pub log2_p_fail: f64,
     pub encryption_key_choice: Cow<'static, str>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ShortintClientKeyTest {
     pub key_filename: Cow<'static, str>,
     pub parameters: TestParameterSet,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ShortintCiphertextTest {
     pub key_filename: Cow<'static, str>,
     pub ct_filename: Cow<'static, str>,
@@ -99,6 +94,8 @@ pub trait TfhersVersion {
 
     const VERSION_NUMBER: &'static str;
 
+    fn seed_prng(seed: u128);
+
     fn gen_shortint_client_key(meta: ShortintClientKeyTest) -> Self::ShortintClientKey;
 
     fn gen_shortint_ct(
@@ -107,7 +104,7 @@ pub trait TfhersVersion {
     ) -> Self::ShortintCiphertext;
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum TestMetadata {
     ShortintCiphertext(ShortintCiphertextTest),
     ShortintClientKey(ShortintClientKeyTest),
