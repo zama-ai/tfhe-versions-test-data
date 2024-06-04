@@ -6,8 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tfhe_0_6 = { git = "https://github.com/zama-ai/tfhe-rs.git", branch = "ns/0.6_with_versionize", features = ["shortint", "x86_64-unix"], package = "tfhe"}
-tfhe-versionable = { git = "https://github.com/zama-ai/tfhe-rs.git", branch = "ns/0.6_with_versionize" }
+tfhe_0_6 = { version = "0.6", features = ["shortint", "x86_64-unix"], package = "tfhe"}
+tfhe-versionable = { version = "0.1" }
 serde = { version = "1.0", features = ["derive"] }
 ron = "0.8"
 ciborium = "0.2"
+
+[patch.crates-io]
+tfhe_0_6 = { git = "https://github.com/zama-ai/tfhe-rs.git", branch = "integration/0.6/versioning", package = "tfhe" }
+tfhe-versionable = { git = "https://github.com/zama-ai/tfhe-rs.git", branch = "integration/0.6/versioning"}

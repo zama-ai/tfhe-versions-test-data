@@ -104,7 +104,7 @@ dependencies = [
 [[package]]
 name = "concrete-csprng"
 version = "0.4.0"
-source = "git+https://github.com/zama-ai/tfhe-rs.git?branch=ns/0.6_with_versionize#b317723b2909e1b0fadc157dd91445fbf983f028"
+source = "git+https://github.com/zama-ai/tfhe-rs.git?branch=integration/0.6/versioning#6c8f972820eeab4cffb7cdbbca412838e926d4ad"
 dependencies = [
  "aes",
  "libc",
@@ -389,7 +389,7 @@ dependencies = [
 [[package]]
 name = "tfhe"
 version = "0.6.1"
-source = "git+https://github.com/zama-ai/tfhe-rs.git?branch=ns/0.6_with_versionize#b317723b2909e1b0fadc157dd91445fbf983f028"
+source = "git+https://github.com/zama-ai/tfhe-rs.git?branch=integration/0.6/versioning#6c8f972820eeab4cffb7cdbbca412838e926d4ad"
 dependencies = [
  "aligned-vec",
  "bincode",
@@ -409,7 +409,7 @@ dependencies = [
 [[package]]
 name = "tfhe-versionable"
 version = "0.1.0"
-source = "git+https://github.com/zama-ai/tfhe-rs.git?branch=ns/0.6_with_versionize#b317723b2909e1b0fadc157dd91445fbf983f028"
+source = "git+https://github.com/zama-ai/tfhe-rs.git?branch=integration/0.6/versioning#6c8f972820eeab4cffb7cdbbca412838e926d4ad"
 dependencies = [
  "serde",
  "tfhe-versionable-derive",
@@ -418,7 +418,7 @@ dependencies = [
 [[package]]
 name = "tfhe-versionable-derive"
 version = "0.1.0"
-source = "git+https://github.com/zama-ai/tfhe-rs.git?branch=ns/0.6_with_versionize#b317723b2909e1b0fadc157dd91445fbf983f028"
+source = "git+https://github.com/zama-ai/tfhe-rs.git?branch=integration/0.6/versioning#6c8f972820eeab4cffb7cdbbca412838e926d4ad"
 dependencies = [
  "proc-macro2",
  "quote",
