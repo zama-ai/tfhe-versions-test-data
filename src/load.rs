@@ -16,8 +16,8 @@ use tfhe::shortint::{
 
 use crate::{TestMetadata, TestParameterSet, DATA_DIR};
 
-pub fn dir_for_latest() -> PathBuf {
-    let mut path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
+pub fn dir_for_latest<P: AsRef<Path>>(base_dir: P) -> PathBuf {
+    let mut path = base_dir.as_ref().to_path_buf();
     path.push(DATA_DIR);
     path.push("latest");
 
