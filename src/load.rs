@@ -1,7 +1,6 @@
 use std::{
     fs::{self, File},
     path::{Path, PathBuf},
-    str::FromStr,
 };
 
 use serde::de::DeserializeOwned;
