@@ -116,7 +116,7 @@ impl Testcase for ShortintCiphertextTest {
     }
 
     fn test_filename(&self) -> String {
-        self.key_filename.to_string()
+        self.ct_filename.to_string()
     }
 }
 
