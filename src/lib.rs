@@ -29,7 +29,7 @@ pub struct TestParameterSet {
     pub ks_base_log: usize,
     pub ks_level: usize,
     pub message_modulus: usize,
-    pub log2_ciphertext_modulus: usize,
+    pub ciphertext_modulus: u128,
     pub carry_modulus: usize,
     pub max_noise_level: usize,
     pub log2_p_fail: f64,

@@ -20,7 +20,7 @@ const TEST_PARAMS: TestParameterSet = TestParameterSet {
     carry_modulus: 4,
     max_noise_level: 5,
     log2_p_fail: -40.05,
-    log2_ciphertext_modulus: 64,
+    ciphertext_modulus: (u64::MAX as u128) + 1,
     encryption_key_choice: Cow::Borrowed("big"),
 };
 

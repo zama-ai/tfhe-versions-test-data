@@ -39,10 +39,7 @@ impl From<TestParameterSet> for ShortintParameterSet {
             carry_modulus: CarryModulus(value.carry_modulus),
             max_noise_level: MaxNoiseLevel::new(value.max_noise_level),
             log2_p_fail: value.log2_p_fail,
-            ciphertext_modulus: CiphertextModulus::try_new_power_of_2(
-                value.log2_ciphertext_modulus,
-            )
-            .unwrap(),
+            ciphertext_modulus: CiphertextModulus::try_new(value.ciphertext_modulus).unwrap(),
             encryption_key_choice: {
                 match &*value.encryption_key_choice {
                     "big" => EncryptionKeyChoice::Big,
