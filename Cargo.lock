@@ -407,6 +407,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "tfhe-backward-compat-data"
+version = "0.1.0"
+dependencies = [
+ "ciborium",
+ "ron",
+ "serde",
+ "tfhe",
+ "tfhe-versionable",
+]
+
+[[package]]
 name = "tfhe-versionable"
 version = "0.1.0"
 source = "git+https://github.com/zama-ai/tfhe-rs.git?branch=integration/0.6/versioning#6c8f972820eeab4cffb7cdbbca412838e926d4ad"
@@ -423,17 +434,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "tfhe-versions-test-data"
-version = "0.1.0"
-dependencies = [
- "ciborium",
- "ron",
- "serde",
- "tfhe",
- "tfhe-versionable",
 ]
 
 [[package]]

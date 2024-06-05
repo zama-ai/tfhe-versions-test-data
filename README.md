@@ -1,4 +1,4 @@
-# Test corpus for tfhe-rs versioning
+# Test corpus for tfhe-rs backward compatibility
 This repo holds various messages from tfhe-rs that have been versioned and serialized.
 The goal is to detect in tfhe-rs Ci when the version of a type should be upgraded because a breaking change has been added.
 

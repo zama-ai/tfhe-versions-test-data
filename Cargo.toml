@@ -1,5 +1,5 @@
 [package]
-name = "tfhe-versions-test-data"
+name = "tfhe-backward-compat-data"
 version = "0.1.0"
 license = "BSD-3-Clause-Clear"
 edition = "2021"
@@ -23,7 +23,7 @@ ron = "0.8"
 ciborium = "0.2"
 
 [[bin]]
-name = "tfhe-versions-test-data"
+name = "tfhe-backward-compat-data"
 required-features = ["generate"]
 
 [features]
