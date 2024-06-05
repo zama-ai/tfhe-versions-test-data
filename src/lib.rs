@@ -1,5 +1,5 @@
 use core::f64;
-use std::borrow::Cow;
+use std::{borrow::Cow, fmt::Display};
 
 use serde::{Deserialize, Serialize};
 
@@ -36,10 +36,71 @@ pub struct TestParameterSet {
     pub encryption_key_choice: Cow<'static, str>,
 }
 
+pub struct TestFailure {
+    target_type: String,
+    test_filename: String,
+    source_error: String,
+}
+
+impl Display for TestFailure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Test: {} in file {}: FAILED: {}",
+            self.target_type, self.test_filename, self.source_error
+        )
+    }
+}
+
+pub struct TestSuccess {
+    target_type: String,
+    test_filename: String,
+}
+
+impl Display for TestSuccess {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Test: {} in file {}: SUCCESS",
+            self.target_type, self.test_filename
+        )
+    }
+}
+
+pub trait Testcase {
+    fn target_type(&self) -> String;
+    fn test_filename(&self) -> String;
+
+    fn success(&self) -> TestSuccess {
+        TestSuccess {
+            target_type: self.target_type(),
+            test_filename: self.test_filename(),
+        }
+    }
+
+    fn failure<E: Display>(&self, error: E) -> TestFailure {
+        TestFailure {
+            target_type: self.target_type(),
+            test_filename: self.test_filename(),
+            source_error: format!("{}", error),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ShortintClientKeyTest {
     pub key_filename: Cow<'static, str>,
     pub parameters: TestParameterSet,
+}
+
+impl Testcase for ShortintClientKeyTest {
+    fn target_type(&self) -> String {
+        "ShortintClientKey".to_string()
+    }
+
+    fn test_filename(&self) -> String {
+        self.key_filename.to_string()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -47,6 +108,16 @@ pub struct ShortintCiphertextTest {
     pub key_filename: Cow<'static, str>,
     pub ct_filename: Cow<'static, str>,
     pub clear_value: u64,
+}
+
+impl Testcase for ShortintCiphertextTest {
+    fn target_type(&self) -> String {
+        "ShortintCiphertext".to_string()
+    }
+
+    fn test_filename(&self) -> String {
+        self.key_filename.to_string()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
