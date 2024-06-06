@@ -37,6 +37,7 @@ pub struct TestParameterSet {
 }
 
 pub struct TestFailure {
+    module: String,
     target_type: String,
     test_filename: String,
     source_error: String,
@@ -46,13 +47,14 @@ impl Display for TestFailure {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Test: {} in file {}: FAILED: {}",
-            self.target_type, self.test_filename, self.source_error
+            "Test: {}::{} in file {}: FAILED: {}",
+            self.module, self.target_type, self.test_filename, self.source_error
         )
     }
 }
 
 pub struct TestSuccess {
+    module: String,
     target_type: String,
     test_filename: String,
 }
@@ -61,18 +63,20 @@ impl Display for TestSuccess {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Test: {} in file {}: SUCCESS",
-            self.target_type, self.test_filename
+            "Test: {}::{} using file {}: SUCCESS",
+            self.module, self.target_type, self.test_filename
         )
     }
 }
 
 pub trait Testcase {
+    fn module(&self) -> String;
     fn target_type(&self) -> String;
     fn test_filename(&self) -> String;
 
     fn success(&self) -> TestSuccess {
         TestSuccess {
+            module: self.module(),
             target_type: self.target_type(),
             test_filename: self.test_filename(),
         }
@@ -80,6 +84,7 @@ pub trait Testcase {
 
     fn failure<E: Display>(&self, error: E) -> TestFailure {
         TestFailure {
+            module: self.module(),
             target_type: self.target_type(),
             test_filename: self.test_filename(),
             source_error: format!("{}", error),
@@ -94,8 +99,12 @@ pub struct ShortintClientKeyTest {
 }
 
 impl Testcase for ShortintClientKeyTest {
+    fn module(&self) -> String {
+        "shortint".to_string()
+    }
+
     fn target_type(&self) -> String {
-        "ShortintClientKey".to_string()
+        "ClientKey".to_string()
     }
 
     fn test_filename(&self) -> String {
@@ -111,6 +120,10 @@ pub struct ShortintCiphertextTest {
 }
 
 impl Testcase for ShortintCiphertextTest {
+    fn module(&self) -> String {
+        "shortint".to_string()
+    }
+
     fn target_type(&self) -> String {
         "ShortintCiphertext".to_string()
     }
