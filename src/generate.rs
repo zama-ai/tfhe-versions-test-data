@@ -46,7 +46,7 @@ pub trait TfhersVersion {
     const VERSION_NUMBER: &'static str;
 
     fn data_dir() -> PathBuf {
-        dir_for_version(Self::VERSION_NUMBER)
+        dir_for_version(env!("CARGO_MANIFEST_DIR"), Self::VERSION_NUMBER)
     }
 
     /// How to fix the prng seed for this version to make sure the generated testcases do not change every time we run the script

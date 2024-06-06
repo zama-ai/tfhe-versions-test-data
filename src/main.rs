@@ -23,6 +23,7 @@ fn gen_all_data<Vers: TfhersVersion>() -> Vec<Testcase> {
 }
 
 fn main() {
+    let root_dir = env!("CARGO_MANIFEST_DIR");
     let testcases = gen_all_data::<V0_6>(); // When we add more versions, extend the Vec with all the testcases
 
     let shortint_testcases: Vec<Testcase> = testcases
@@ -31,5 +32,5 @@ fn main() {
         .map(|test| test.clone())
         .collect();
 
-    store_metadata(&shortint_testcases, data_dir().join("shortint.ron"))
+    store_metadata(&shortint_testcases, data_dir(root_dir).join("shortint.ron"))
 }

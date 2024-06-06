@@ -1,5 +1,9 @@
 use core::f64;
-use std::{borrow::Cow, fmt::Display, path::PathBuf, str::FromStr};
+use std::{
+    borrow::Cow,
+    fmt::Display,
+    path::{Path, PathBuf},
+};
 
 #[cfg(feature = "load")]
 use semver::{Version, VersionReq};
@@ -39,15 +43,15 @@ pub struct TestParameterSet {
     pub encryption_key_choice: Cow<'static, str>,
 }
 
-pub fn dir_for_version(version: &str) -> PathBuf {
-    let mut path = data_dir();
+pub fn dir_for_version<P: AsRef<Path>>(root: P, version: &str) -> PathBuf {
+    let mut path = data_dir(root);
     path.push(version.replace(".", "_"));
 
     path
 }
 
-pub fn data_dir() -> PathBuf {
-    let mut path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
+pub fn data_dir<P: AsRef<Path>>(root: P) -> PathBuf {
+    let mut path = PathBuf::from(root.as_ref());
     path.push(DATA_DIR);
 
     path
