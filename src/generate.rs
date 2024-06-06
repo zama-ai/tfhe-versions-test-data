@@ -34,7 +34,7 @@ pub fn store_versioned<Data: Versionize, P: AsRef<Path>>(msg: &Data, path: P) {
     fs::write(path, &serialized).unwrap();
 }
 
-pub fn store_metadata<Meta: Serialize, P: AsRef<Path>>(value: &Meta, path: P) {
+pub fn store_testcases<Meta: Serialize, P: AsRef<Path>>(value: &Meta, path: P) {
     let serialized = ron::to_string(value).unwrap();
     fs::write(path, &serialized).unwrap();
 }
