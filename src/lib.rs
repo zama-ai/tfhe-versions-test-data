@@ -125,7 +125,7 @@ impl Testcase for ShortintCiphertextTest {
     }
 
     fn target_type(&self) -> String {
-        "ShortintCiphertext".to_string()
+        "Ciphertext".to_string()
     }
 
     fn test_filename(&self) -> String {
