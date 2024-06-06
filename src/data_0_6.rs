@@ -1,3 +1,5 @@
+use std::{borrow::Cow, fs::create_dir_all};
+
 use tfhe_0_6::{
     core_crypto::commons::{
         generators::DeterministicSeeder,
@@ -5,7 +7,6 @@ use tfhe_0_6::{
     },
     shortint::{
         engine::ShortintEngine,
-        gen_keys,
         parameters::{
             DecompositionBaseLog, DecompositionLevelCount, DynamicDistribution, GlweDimension,
             LweDimension, PolynomialSize, StandardDev,
@@ -16,7 +17,8 @@ use tfhe_0_6::{
 };
 
 use crate::{
-    generate::TfhersVersion, ShortintCiphertextTest, ShortintClientKeyTest, TestParameterSet,
+    generate::{store_versioned, TfhersVersion, TEST_PARAMS},
+    ShortintCiphertextTest, ShortintClientKeyTest, TestMetadata, TestParameterSet,
 };
 
 impl From<TestParameterSet> for ShortintParameterSet {
@@ -51,6 +53,21 @@ impl From<TestParameterSet> for ShortintParameterSet {
     }
 }
 
+const SHORTINT_CLIENTKEY_TEST: ShortintClientKeyTest = ShortintClientKeyTest {
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    parameters: TEST_PARAMS,
+};
+const SHORTINT_CT1_TEST: ShortintCiphertextTest = ShortintCiphertextTest {
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    ct_filename: Cow::Borrowed("ct1.cbor"),
+    clear_value: 0,
+};
+const SHORTINT_CT2_TEST: ShortintCiphertextTest = ShortintCiphertextTest {
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    ct_filename: Cow::Borrowed("ct2.cbor"),
+    clear_value: 3,
+};
+
 pub struct V0_6;
 
 impl TfhersVersion for V0_6 {
@@ -68,15 +85,30 @@ impl TfhersVersion for V0_6 {
         });
     }
 
-    fn gen_shortint_client_key(meta: ShortintClientKeyTest) -> Self::ShortintClientKey {
-        let (client_key, _server_key) = gen_keys(meta.parameters);
-        client_key
-    }
+    fn gen_shortint_data() -> Vec<TestMetadata> {
+        let dir = Self::data_dir().join("shortint");
+        create_dir_all(&dir).unwrap();
 
-    fn gen_shortint_ct(
-        meta: ShortintCiphertextTest,
-        key: &Self::ShortintClientKey,
-    ) -> Self::ShortintCiphertext {
-        key.encrypt(meta.clear_value)
+        // generate a client key
+        let shortint_client_key = ClientKey::new(SHORTINT_CLIENTKEY_TEST.parameters);
+
+        store_versioned(
+            &shortint_client_key,
+            dir.join(&*SHORTINT_CLIENTKEY_TEST.key_filename),
+        );
+
+        // generate ciphertexts
+        let ct1 = shortint_client_key.encrypt(SHORTINT_CT1_TEST.clear_value);
+        let ct2 = shortint_client_key.encrypt(SHORTINT_CT2_TEST.clear_value);
+
+        // Serialize them
+        store_versioned(&ct1, dir.join(&*SHORTINT_CT1_TEST.ct_filename));
+        store_versioned(&ct2, dir.join(&*SHORTINT_CT2_TEST.ct_filename));
+
+        vec![
+            TestMetadata::ShortintClientKey(SHORTINT_CLIENTKEY_TEST),
+            TestMetadata::ShortintCiphertext(SHORTINT_CT1_TEST),
+            TestMetadata::ShortintCiphertext(SHORTINT_CT2_TEST),
+        ]
     }
 }

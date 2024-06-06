@@ -1,21 +1,31 @@
 use std::{
+    borrow::Cow,
     fs,
     path::{Path, PathBuf},
-    str::FromStr,
 };
 
 use serde::Serialize;
 use tfhe_versionable::Versionize;
 
-use crate::{ShortintCiphertextTest, ShortintClientKeyTest, DATA_DIR};
+use crate::{dir_for_version, TestMetadata, TestParameterSet};
 
-pub fn dir_for_version(version: &str) -> PathBuf {
-    let mut path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
-    path.push(DATA_DIR);
-    path.push(version.replace(".", "_"));
-
-    path
-}
+pub const TEST_PARAMS: TestParameterSet = TestParameterSet {
+    lwe_dimension: 761,
+    glwe_dimension: 1,
+    polynomial_size: 2048,
+    lwe_noise_gaussian_stddev: 6.36835566258815e-06,
+    glwe_noise_gaussian_stddev: 3.1529322391500584e-16,
+    pbs_base_log: 23,
+    pbs_level: 1,
+    ks_base_log: 3,
+    ks_level: 5,
+    message_modulus: 4,
+    carry_modulus: 4,
+    max_noise_level: 5,
+    log2_p_fail: -40.05,
+    ciphertext_modulus: (u64::MAX as u128) + 1,
+    encryption_key_choice: Cow::Borrowed("big"),
+};
 
 pub fn store_versioned<Data: Versionize, P: AsRef<Path>>(msg: &Data, path: P) {
     let versioned = msg.versionize();
@@ -35,12 +45,15 @@ pub trait TfhersVersion {
 
     const VERSION_NUMBER: &'static str;
 
+    fn data_dir() -> PathBuf {
+        dir_for_version(Self::VERSION_NUMBER)
+    }
+
+    /// How to fix the prng seed for this version to make sure the generated testcases do not change every time we run the script
     fn seed_prng(seed: u128);
 
-    fn gen_shortint_client_key(meta: ShortintClientKeyTest) -> Self::ShortintClientKey;
-
-    fn gen_shortint_ct(
-        meta: ShortintCiphertextTest,
-        key: &Self::ShortintClientKey,
-    ) -> Self::ShortintCiphertext;
+    /// Generates data for the "shortint" module for this version.
+    /// This should create tfhe-rs shortint types, versionize them and store them into the version specific directory.
+    /// The metadata for the generated tests should be returned in the same order that the tests will be run.
+    fn gen_shortint_data() -> Vec<TestMetadata>;
 }

@@ -1,5 +1,8 @@
 use core::f64;
-use std::{borrow::Cow, fmt::Display};
+use std::{borrow::Cow, fmt::Display, path::PathBuf, str::FromStr};
+
+#[cfg(feature = "load")]
+use semver::{Version, VersionReq};
 
 use serde::{Deserialize, Serialize};
 
@@ -17,7 +20,7 @@ const DATA_DIR: &str = "data";
 /// of changes made into the  ParameterSet of tfhe-rs. The idea here is to define a type
 /// that is able to carry the information of the used parameters without using any tfhe-rs
 /// types.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TestParameterSet {
     pub lwe_dimension: usize,
     pub glwe_dimension: usize,
@@ -34,6 +37,20 @@ pub struct TestParameterSet {
     pub max_noise_level: usize,
     pub log2_p_fail: f64,
     pub encryption_key_choice: Cow<'static, str>,
+}
+
+pub fn dir_for_version(version: &str) -> PathBuf {
+    let mut path = data_dir();
+    path.push(version.replace(".", "_"));
+
+    path
+}
+
+pub fn data_dir() -> PathBuf {
+    let mut path = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap();
+    path.push(DATA_DIR);
+
+    path
 }
 
 pub struct TestFailure {
@@ -69,7 +86,7 @@ impl Display for TestSuccess {
     }
 }
 
-pub trait Testcase {
+pub trait TestType {
     fn module(&self) -> String;
     fn target_type(&self) -> String;
     fn test_filename(&self) -> String;
@@ -92,13 +109,13 @@ pub trait Testcase {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ShortintClientKeyTest {
     pub key_filename: Cow<'static, str>,
     pub parameters: TestParameterSet,
 }
 
-impl Testcase for ShortintClientKeyTest {
+impl TestType for ShortintClientKeyTest {
     fn module(&self) -> String {
         "shortint".to_string()
     }
@@ -112,14 +129,14 @@ impl Testcase for ShortintClientKeyTest {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ShortintCiphertextTest {
     pub key_filename: Cow<'static, str>,
     pub ct_filename: Cow<'static, str>,
     pub clear_value: u64,
 }
 
-impl Testcase for ShortintCiphertextTest {
+impl TestType for ShortintCiphertextTest {
     fn module(&self) -> String {
         "shortint".to_string()
     }
@@ -133,8 +150,28 @@ impl Testcase for ShortintCiphertextTest {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum TestMetadata {
     ShortintCiphertext(ShortintCiphertextTest),
     ShortintClientKey(ShortintClientKeyTest),
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Testcase {
+    pub tfhe_version_min: String,
+    pub tfhe_module: String,
+    #[serde(flatten)]
+    pub metadata: TestMetadata,
+}
+
+impl Testcase {
+    #[cfg(feature = "load")]
+    pub fn is_valid_for_version(&self, version: &str) -> bool {
+        let tfhe_version = Version::parse(&version).unwrap();
+
+        let req = format!(">={}", test.tfhe_version_min);
+        let min_version = VersionReq::parse(&req).unwrap();
+
+        min_version.matches(&tfhe_version)
+    }
 }
