@@ -173,7 +173,7 @@ impl Testcase {
     pub fn is_valid_for_version(&self, version: &str) -> bool {
         let tfhe_version = Version::parse(&version).unwrap();
 
-        let req = format!(">={}", test.tfhe_version_min);
+        let req = format!(">={}", self.tfhe_version_min);
         let min_version = VersionReq::parse(&req).unwrap();
 
         min_version.matches(&tfhe_version)

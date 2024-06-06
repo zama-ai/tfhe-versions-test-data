@@ -1,9 +1,8 @@
 use std::{
     fs::{self, File},
-    path::{Path, PathBuf},
+    path::Path,
 };
 
-use semver::{Version, VersionReq};
 use serde::de::DeserializeOwned;
 
 use crate::Testcase;
