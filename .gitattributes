@@ -1,1 +1,2 @@
 *.cbor filter=lfs diff=lfs merge=lfs -text
+*.bcode filter=lfs diff=lfs merge=lfs -text

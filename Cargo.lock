@@ -416,6 +416,7 @@ dependencies = [
 name = "tfhe-backward-compat-data"
 version = "0.1.0"
 dependencies = [
+ "bincode",
  "ciborium",
  "ron",
  "semver",
