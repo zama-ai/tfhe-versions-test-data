@@ -17,7 +17,7 @@ use tfhe_0_6::{
 };
 
 use crate::{
-    generate::{store_versioned, TfhersVersion, TEST_PARAMS},
+    generate::{store_versioned_test, TfhersVersion, TEST_PARAMS},
     ShortintCiphertextTest, ShortintClientKeyTest, TestMetadata, TestParameterSet,
 };
 
@@ -54,17 +54,17 @@ impl From<TestParameterSet> for ShortintParameterSet {
 }
 
 const SHORTINT_CLIENTKEY_TEST: ShortintClientKeyTest = ShortintClientKeyTest {
-    key_filename: Cow::Borrowed("client_key.cbor"),
+    test_filename: Cow::Borrowed("client_key"),
     parameters: TEST_PARAMS,
 };
 const SHORTINT_CT1_TEST: ShortintCiphertextTest = ShortintCiphertextTest {
+    test_filename: Cow::Borrowed("ct1"),
     key_filename: Cow::Borrowed("client_key.cbor"),
-    ct_filename: Cow::Borrowed("ct1.cbor"),
     clear_value: 0,
 };
 const SHORTINT_CT2_TEST: ShortintCiphertextTest = ShortintCiphertextTest {
+    test_filename: Cow::Borrowed("ct2"),
     key_filename: Cow::Borrowed("client_key.cbor"),
-    ct_filename: Cow::Borrowed("ct2.cbor"),
     clear_value: 3,
 };
 
@@ -92,9 +92,10 @@ impl TfhersVersion for V0_6 {
         // generate a client key
         let shortint_client_key = ClientKey::new(SHORTINT_CLIENTKEY_TEST.parameters);
 
-        store_versioned(
+        store_versioned_test(
             &shortint_client_key,
-            dir.join(&*SHORTINT_CLIENTKEY_TEST.key_filename),
+            &dir,
+            &*SHORTINT_CLIENTKEY_TEST.test_filename,
         );
 
         // generate ciphertexts
@@ -102,8 +103,8 @@ impl TfhersVersion for V0_6 {
         let ct2 = shortint_client_key.encrypt(SHORTINT_CT2_TEST.clear_value);
 
         // Serialize them
-        store_versioned(&ct1, dir.join(&*SHORTINT_CT1_TEST.ct_filename));
-        store_versioned(&ct2, dir.join(&*SHORTINT_CT2_TEST.ct_filename));
+        store_versioned_test(&ct1, &dir, &*SHORTINT_CT1_TEST.test_filename);
+        store_versioned_test(&ct2, &dir, &*SHORTINT_CT2_TEST.test_filename);
 
         vec![
             TestMetadata::ShortintClientKey(SHORTINT_CLIENTKEY_TEST),

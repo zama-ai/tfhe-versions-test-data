@@ -91,8 +91,14 @@ impl Display for TestSuccess {
 }
 
 pub trait TestType {
+    /// The tfhe-rs module where this type reside
     fn module(&self) -> String;
+
+    /// The Type that is tested
     fn target_type(&self) -> String;
+
+    /// The name of the file to be tested, without path or extension
+    /// (they will be infered)
     fn test_filename(&self) -> String;
 
     fn success(&self) -> TestSuccess {
@@ -115,7 +121,7 @@ pub trait TestType {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ShortintClientKeyTest {
-    pub key_filename: Cow<'static, str>,
+    pub test_filename: Cow<'static, str>,
     pub parameters: TestParameterSet,
 }
 
@@ -129,14 +135,14 @@ impl TestType for ShortintClientKeyTest {
     }
 
     fn test_filename(&self) -> String {
-        self.key_filename.to_string()
+        self.test_filename.to_string()
     }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ShortintCiphertextTest {
+    pub test_filename: Cow<'static, str>,
     pub key_filename: Cow<'static, str>,
-    pub ct_filename: Cow<'static, str>,
     pub clear_value: u64,
 }
 
@@ -150,7 +156,7 @@ impl TestType for ShortintCiphertextTest {
     }
 
     fn test_filename(&self) -> String {
-        self.ct_filename.to_string()
+        self.test_filename.to_string()
     }
 }
 

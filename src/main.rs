@@ -1,7 +1,7 @@
 use tfhe_backward_compat_data::{
     data_0_6::V0_6,
     data_dir,
-    generate::{store_testcases, TfhersVersion},
+    generate::{store_metadata, TfhersVersion},
     Testcase,
 };
 
@@ -32,5 +32,5 @@ fn main() {
         .map(|test| test.clone())
         .collect();
 
-    store_testcases(&shortint_testcases, data_dir(root_dir).join("shortint.ron"))
+    store_metadata(&shortint_testcases, data_dir(root_dir).join("shortint.ron"))
 }

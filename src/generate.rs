@@ -27,14 +27,20 @@ pub const TEST_PARAMS: TestParameterSet = TestParameterSet {
     encryption_key_choice: Cow::Borrowed("big"),
 };
 
-pub fn store_versioned<Data: Versionize, P: AsRef<Path>>(msg: &Data, path: P) {
+/// Stores the test data in `dir`, encoded in both cbor and bincode
+pub fn store_versioned_test<Data: Versionize, P: AsRef<Path>>(
+    msg: &Data,
+    dir: P,
+    test_filename: &str,
+) {
     let versioned = msg.versionize();
-    let mut serialized = Vec::new();
-    ciborium::ser::into_writer(&versioned, &mut serialized).unwrap();
-    fs::write(path, &serialized).unwrap();
+    let mut serialized_cbor = Vec::new();
+    let filename_cbor = format!("{}.cbor", test_filename);
+    ciborium::ser::into_writer(&versioned, &mut serialized_cbor).unwrap();
+    fs::write(dir.as_ref().join(filename_cbor), &serialized_cbor).unwrap();
 }
 
-pub fn store_testcases<Meta: Serialize, P: AsRef<Path>>(value: &Meta, path: P) {
+pub fn store_metadata<Meta: Serialize, P: AsRef<Path>>(value: &Meta, path: P) {
     let serialized = ron::to_string(value).unwrap();
     fs::write(path, &serialized).unwrap();
 }
