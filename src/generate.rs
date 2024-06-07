@@ -7,7 +7,7 @@ use std::{
 use serde::Serialize;
 use tfhe_versionable::Versionize;
 
-use crate::{dir_for_version, TestMetadata, TestParameterSet};
+use crate::{data_dir, dir_for_version, TestMetadata, TestParameterSet};
 
 pub const TEST_PARAMS: TestParameterSet = TestParameterSet {
     lwe_dimension: 761,
@@ -46,7 +46,8 @@ pub trait TfhersVersion {
     const VERSION_NUMBER: &'static str;
 
     fn data_dir() -> PathBuf {
-        dir_for_version(env!("CARGO_MANIFEST_DIR"), Self::VERSION_NUMBER)
+        let base_data_dir = data_dir(env!("CARGO_MANIFEST_DIR"));
+        dir_for_version(base_data_dir, Self::VERSION_NUMBER)
     }
 
     /// How to fix the prng seed for this version to make sure the generated testcases do not change every time we run the script
