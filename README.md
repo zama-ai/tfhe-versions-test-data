@@ -2,9 +2,7 @@
 This repo holds various messages from tfhe-rs that have been versioned and serialized.
 The goal is to detect in tfhe-rs Ci when the version of a type should be upgraded because a breaking change has been added.
 
-The messages are serialized using cbor because it has the following features:
-- The names of structure fields and enum variants are encoded. This allows stricter checks than something like bincode that only encodes their indexes.
-- It supports arrays of up to 2^64 elements.
+The messages are serialized using cbor and bincode because they both support large arrays and are vulnerable to different sets of breaking changes.
 
 # Data generation
 To re-generate the data, run the binary target for this project: `cargo run --release`. The prng is seeded using a fixed seed so the data should be identical.

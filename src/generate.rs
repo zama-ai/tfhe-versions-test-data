@@ -1,9 +1,10 @@
 use std::{
     borrow::Cow,
-    fs,
+    fs::{self, File},
     path::{Path, PathBuf},
 };
 
+use bincode::Options;
 use serde::Serialize;
 use tfhe_versionable::Versionize;
 
@@ -34,10 +35,19 @@ pub fn store_versioned_test<Data: Versionize, P: AsRef<Path>>(
     test_filename: &str,
 ) {
     let versioned = msg.versionize();
-    let mut serialized_cbor = Vec::new();
+
+    // Store in cbor
     let filename_cbor = format!("{}.cbor", test_filename);
-    ciborium::ser::into_writer(&versioned, &mut serialized_cbor).unwrap();
-    fs::write(dir.as_ref().join(filename_cbor), &serialized_cbor).unwrap();
+    let mut cbor_file = File::create(dir.as_ref().join(filename_cbor)).unwrap();
+    ciborium::ser::into_writer(&versioned, &mut cbor_file).unwrap();
+
+    // Store in bincode
+    let filename_bincode = format!("{}.bcode", test_filename);
+    let mut bincode_file = File::create(dir.as_ref().join(filename_bincode)).unwrap();
+    let options = bincode::DefaultOptions::new().with_fixint_encoding();
+    options
+        .serialize_into(&mut bincode_file, &versioned)
+        .unwrap();
 }
 
 pub fn store_metadata<Meta: Serialize, P: AsRef<Path>>(value: &Meta, path: P) {
