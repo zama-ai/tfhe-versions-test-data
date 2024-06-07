@@ -164,7 +164,6 @@ pub enum TestMetadata {
 pub struct Testcase {
     pub tfhe_version_min: String,
     pub tfhe_module: String,
-    #[serde(flatten)]
     pub metadata: TestMetadata,
 }
 
