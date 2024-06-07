@@ -45,7 +45,7 @@ pub struct TestParameterSet {
 
 pub fn dir_for_version<P: AsRef<Path>>(data_dir: P, version: &str) -> PathBuf {
     let mut path = data_dir.as_ref().to_path_buf();
-    path.push(version.replace(".", "_"));
+    path.push(version.replace('.', "_"));
 
     path
 }

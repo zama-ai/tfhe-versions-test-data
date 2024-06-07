@@ -52,7 +52,7 @@ pub fn store_versioned_test<Data: Versionize, P: AsRef<Path>>(
 
 pub fn store_metadata<Meta: Serialize, P: AsRef<Path>>(value: &Meta, path: P) {
     let serialized = ron::to_string(value).unwrap();
-    fs::write(path, &serialized).unwrap();
+    fs::write(path, serialized).unwrap();
 }
 
 pub trait TfhersVersion {

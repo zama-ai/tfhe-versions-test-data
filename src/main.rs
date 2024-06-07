@@ -29,7 +29,7 @@ fn main() {
     let shortint_testcases: Vec<Testcase> = testcases
         .iter()
         .filter(|test| test.tfhe_module == "shortint")
-        .map(|test| test.clone())
+        .cloned()
         .collect();
 
     store_metadata(&shortint_testcases, data_dir(root_dir).join("shortint.ron"))

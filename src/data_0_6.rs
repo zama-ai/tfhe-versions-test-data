@@ -95,7 +95,7 @@ impl TfhersVersion for V0_6 {
         store_versioned_test(
             &shortint_client_key,
             &dir,
-            &*SHORTINT_CLIENTKEY_TEST.test_filename,
+            &SHORTINT_CLIENTKEY_TEST.test_filename,
         );
 
         // generate ciphertexts
@@ -103,8 +103,8 @@ impl TfhersVersion for V0_6 {
         let ct2 = shortint_client_key.encrypt(SHORTINT_CT2_TEST.clear_value);
 
         // Serialize them
-        store_versioned_test(&ct1, &dir, &*SHORTINT_CT1_TEST.test_filename);
-        store_versioned_test(&ct2, &dir, &*SHORTINT_CT2_TEST.test_filename);
+        store_versioned_test(&ct1, &dir, &SHORTINT_CT1_TEST.test_filename);
+        store_versioned_test(&ct2, &dir, &SHORTINT_CT2_TEST.test_filename);
 
         vec![
             TestMetadata::ShortintClientKey(SHORTINT_CLIENTKEY_TEST),
