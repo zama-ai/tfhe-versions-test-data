@@ -2,7 +2,7 @@ use tfhe_backward_compat_data::{
     data_0_6::V0_6,
     data_dir,
     generate::{store_metadata, TfhersVersion},
-    Testcase,
+    Testcase, HL_MODULE_NAME, SHORTINT_MODULE_NAME,
 };
 
 const PRNG_SEED: u128 = 0xdeadbeef;
@@ -10,16 +10,26 @@ const PRNG_SEED: u128 = 0xdeadbeef;
 fn gen_all_data<Vers: TfhersVersion>() -> Vec<Testcase> {
     Vers::seed_prng(PRNG_SEED);
 
-    let tests = Vers::gen_shortint_data();
+    let shortint_tests = Vers::gen_shortint_data();
 
-    tests
+    let mut tests: Vec<Testcase> = shortint_tests
         .iter()
         .map(|metadata| Testcase {
             tfhe_version_min: Vers::VERSION_NUMBER.to_string(),
-            tfhe_module: "shortint".to_string(),
+            tfhe_module: SHORTINT_MODULE_NAME.to_string(),
             metadata: metadata.clone(),
         })
-        .collect()
+        .collect();
+
+    let hl_tests = Vers::gen_hl_data();
+
+    tests.extend(hl_tests.iter().map(|metadata| Testcase {
+        tfhe_version_min: Vers::VERSION_NUMBER.to_string(),
+        tfhe_module: HL_MODULE_NAME.to_string(),
+        metadata: metadata.clone(),
+    }));
+
+    tests
 }
 
 fn main() {
@@ -28,9 +38,20 @@ fn main() {
 
     let shortint_testcases: Vec<Testcase> = testcases
         .iter()
-        .filter(|test| test.tfhe_module == "shortint")
+        .filter(|test| test.tfhe_module == SHORTINT_MODULE_NAME)
         .cloned()
         .collect();
 
-    store_metadata(&shortint_testcases, data_dir(root_dir).join("shortint.ron"))
+    store_metadata(&shortint_testcases, data_dir(root_dir).join("shortint.ron"));
+
+    let high_level_api_testcases: Vec<Testcase> = testcases
+        .iter()
+        .filter(|test| test.tfhe_module == HL_MODULE_NAME)
+        .cloned()
+        .collect();
+
+    store_metadata(
+        &high_level_api_testcases,
+        data_dir(root_dir).join("high_level_api.ron"),
+    );
 }

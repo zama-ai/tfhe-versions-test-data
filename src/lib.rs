@@ -20,6 +20,9 @@ pub mod load;
 
 const DATA_DIR: &str = "data";
 
+pub const SHORTINT_MODULE_NAME: &str = "shortint";
+pub const HL_MODULE_NAME: &str = "high_level_api";
+
 /// This struct re-defines tfhe-rs parameter sets but this allows to be independant
 /// of changes made into the  ParameterSet of tfhe-rs. The idea here is to define a type
 /// that is able to carry the information of the used parameters without using any tfhe-rs
@@ -127,7 +130,7 @@ pub struct ShortintClientKeyTest {
 
 impl TestType for ShortintClientKeyTest {
     fn module(&self) -> String {
-        "shortint".to_string()
+        SHORTINT_MODULE_NAME.to_string()
     }
 
     fn target_type(&self) -> String {
@@ -148,7 +151,48 @@ pub struct ShortintCiphertextTest {
 
 impl TestType for ShortintCiphertextTest {
     fn module(&self) -> String {
-        "shortint".to_string()
+        SHORTINT_MODULE_NAME.to_string()
+    }
+
+    fn target_type(&self) -> String {
+        "Ciphertext".to_string()
+    }
+
+    fn test_filename(&self) -> String {
+        self.test_filename.to_string()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct HlClientKeyTest {
+    pub test_filename: Cow<'static, str>,
+    pub parameters: TestParameterSet,
+}
+
+impl TestType for HlClientKeyTest {
+    fn module(&self) -> String {
+        HL_MODULE_NAME.to_string()
+    }
+
+    fn target_type(&self) -> String {
+        "ClientKey".to_string()
+    }
+
+    fn test_filename(&self) -> String {
+        self.test_filename.to_string()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct HlCiphertextTest {
+    pub test_filename: Cow<'static, str>,
+    pub key_filename: Cow<'static, str>,
+    pub clear_value: u64,
+}
+
+impl TestType for HlCiphertextTest {
+    fn module(&self) -> String {
+        HL_MODULE_NAME.to_string()
     }
 
     fn target_type(&self) -> String {
@@ -164,6 +208,8 @@ impl TestType for ShortintCiphertextTest {
 pub enum TestMetadata {
     ShortintCiphertext(ShortintCiphertextTest),
     ShortintClientKey(ShortintClientKeyTest),
+    HlCiphertext(HlCiphertextTest),
+    HlClientKey(HlClientKeyTest),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
