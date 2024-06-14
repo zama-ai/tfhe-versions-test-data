@@ -76,9 +76,6 @@ pub fn store_metadata<Meta: Serialize, P: AsRef<Path>>(value: &Meta, path: P) {
 }
 
 pub trait TfhersVersion {
-    type ShortintCiphertext: Versionize;
-    type ShortintClientKey: Versionize;
-
     const VERSION_NUMBER: &'static str;
 
     fn data_dir() -> PathBuf {

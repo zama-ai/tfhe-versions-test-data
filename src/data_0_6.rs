@@ -14,10 +14,10 @@ use tfhe_0_6::{
             DecompositionBaseLog, DecompositionLevelCount, DynamicDistribution, GlweDimension,
             LweDimension, PolynomialSize, StandardDev,
         },
-        CarryModulus, Ciphertext, CiphertextModulus, ClassicPBSParameters, ClientKey,
-        EncryptionKeyChoice, MaxNoiseLevel, MessageModulus, PBSParameters,
+        CarryModulus, CiphertextModulus, ClassicPBSParameters, EncryptionKeyChoice, MaxNoiseLevel,
+        MessageModulus, PBSParameters,
     },
-    FheUint8,
+    CompressedFheUint8, FheUint8,
 };
 
 use crate::{
@@ -87,20 +87,32 @@ const HL_CLIENTKEY_TEST: HlClientKeyTest = HlClientKeyTest {
 const HL_CT1_TEST: HlCiphertextTest = HlCiphertextTest {
     test_filename: Cow::Borrowed("ct1"),
     key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: false,
     clear_value: 0,
 };
 const HL_CT2_TEST: HlCiphertextTest = HlCiphertextTest {
     test_filename: Cow::Borrowed("ct2"),
     key_filename: Cow::Borrowed("client_key.cbor"),
-    clear_value: 3,
+    compressed: false,
+    clear_value: 255,
+};
+
+const HL_COMPRESSED_CT1_TEST: HlCiphertextTest = HlCiphertextTest {
+    test_filename: Cow::Borrowed("ct1_compressed"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: true,
+    clear_value: 0,
+};
+const HL_COMPRESSED_CT2_TEST: HlCiphertextTest = HlCiphertextTest {
+    test_filename: Cow::Borrowed("ct2_compressed"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: true,
+    clear_value: 255,
 };
 
 pub struct V0_6;
 
 impl TfhersVersion for V0_6 {
-    type ShortintCiphertext = Ciphertext;
-    type ShortintClientKey = ClientKey;
-
     const VERSION_NUMBER: &'static str = "0.6";
 
     fn seed_prng(seed: u128) {
@@ -158,14 +170,23 @@ impl TfhersVersion for V0_6 {
         let ct1 = FheUint8::encrypt(HL_CT1_TEST.clear_value, &hl_client_key);
         let ct2 = FheUint8::encrypt(HL_CT2_TEST.clear_value, &hl_client_key);
 
+        let compressed_ct1 =
+            CompressedFheUint8::encrypt(HL_COMPRESSED_CT1_TEST.clear_value, &hl_client_key);
+        let compressed_ct2 =
+            CompressedFheUint8::encrypt(HL_COMPRESSED_CT2_TEST.clear_value, &hl_client_key);
+
         // Serialize them
         store_versioned_test(&ct1, &dir, &HL_CT1_TEST.test_filename);
         store_versioned_test(&ct2, &dir, &HL_CT2_TEST.test_filename);
+        store_versioned_test(&compressed_ct1, &dir, &HL_COMPRESSED_CT1_TEST.test_filename);
+        store_versioned_test(&compressed_ct2, &dir, &HL_COMPRESSED_CT2_TEST.test_filename);
 
         vec![
             TestMetadata::HlClientKey(HL_CLIENTKEY_TEST),
             TestMetadata::HlCiphertext(HL_CT1_TEST),
             TestMetadata::HlCiphertext(HL_CT2_TEST),
+            TestMetadata::HlCiphertext(HL_COMPRESSED_CT1_TEST),
+            TestMetadata::HlCiphertext(HL_COMPRESSED_CT2_TEST),
         ]
     }
 }
