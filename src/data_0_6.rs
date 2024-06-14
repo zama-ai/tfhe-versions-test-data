@@ -6,7 +6,9 @@ use tfhe_0_6::{
         generators::DeterministicSeeder,
         math::random::{ActivatedRandomGenerator, Seed},
     },
+    generate_keys,
     prelude::FheEncrypt,
+    set_server_key,
     shortint::{
         self,
         engine::ShortintEngine,
@@ -97,14 +99,14 @@ const HL_CT2_TEST: HlCiphertextTest = HlCiphertextTest {
     clear_value: 255,
 };
 
-const HL_COMPRESSED_CT1_TEST: HlCiphertextTest = HlCiphertextTest {
-    test_filename: Cow::Borrowed("ct1_compressed"),
+const HL_COMPRESSED_SEEDED_CT_TEST: HlCiphertextTest = HlCiphertextTest {
+    test_filename: Cow::Borrowed("ct_compressed_seeded"),
     key_filename: Cow::Borrowed("client_key.cbor"),
     compressed: true,
-    clear_value: 0,
+    clear_value: 255,
 };
-const HL_COMPRESSED_CT2_TEST: HlCiphertextTest = HlCiphertextTest {
-    test_filename: Cow::Borrowed("ct2_compressed"),
+const HL_COMPRESSED_CT_MODSWITCHED_TEST: HlCiphertextTest = HlCiphertextTest {
+    test_filename: Cow::Borrowed("ct_compressed_modswitched"),
     key_filename: Cow::Borrowed("client_key.cbor"),
     compressed: true,
     clear_value: 255,
@@ -162,7 +164,8 @@ impl TfhersVersion for V0_6 {
         let config =
             tfhe_0_6::ConfigBuilder::with_custom_parameters(HL_CLIENTKEY_TEST.parameters, None)
                 .build();
-        let hl_client_key = tfhe_0_6::ClientKey::generate(config);
+        let (hl_client_key, hl_server_key) = generate_keys(config);
+        set_server_key(hl_server_key);
 
         store_versioned_test(&hl_client_key, &dir, &HL_CLIENTKEY_TEST.test_filename);
 
@@ -170,23 +173,38 @@ impl TfhersVersion for V0_6 {
         let ct1 = FheUint8::encrypt(HL_CT1_TEST.clear_value, &hl_client_key);
         let ct2 = FheUint8::encrypt(HL_CT2_TEST.clear_value, &hl_client_key);
 
+        // Generate compressed ciphertexts
+        // The first one using seeded (default) method
         let compressed_ct1 =
-            CompressedFheUint8::encrypt(HL_COMPRESSED_CT1_TEST.clear_value, &hl_client_key);
-        let compressed_ct2 =
-            CompressedFheUint8::encrypt(HL_COMPRESSED_CT2_TEST.clear_value, &hl_client_key);
+            CompressedFheUint8::encrypt(HL_COMPRESSED_SEEDED_CT_TEST.clear_value, &hl_client_key);
+
+        // The second one using the modulus switched method
+        let compressed_ct2 = FheUint8::encrypt(
+            HL_COMPRESSED_CT_MODSWITCHED_TEST.clear_value,
+            &hl_client_key,
+        )
+        .compress();
 
         // Serialize them
         store_versioned_test(&ct1, &dir, &HL_CT1_TEST.test_filename);
         store_versioned_test(&ct2, &dir, &HL_CT2_TEST.test_filename);
-        store_versioned_test(&compressed_ct1, &dir, &HL_COMPRESSED_CT1_TEST.test_filename);
-        store_versioned_test(&compressed_ct2, &dir, &HL_COMPRESSED_CT2_TEST.test_filename);
+        store_versioned_test(
+            &compressed_ct1,
+            &dir,
+            &HL_COMPRESSED_SEEDED_CT_TEST.test_filename,
+        );
+        store_versioned_test(
+            &compressed_ct2,
+            &dir,
+            &HL_COMPRESSED_CT_MODSWITCHED_TEST.test_filename,
+        );
 
         vec![
             TestMetadata::HlClientKey(HL_CLIENTKEY_TEST),
             TestMetadata::HlCiphertext(HL_CT1_TEST),
             TestMetadata::HlCiphertext(HL_CT2_TEST),
-            TestMetadata::HlCiphertext(HL_COMPRESSED_CT1_TEST),
-            TestMetadata::HlCiphertext(HL_COMPRESSED_CT2_TEST),
+            TestMetadata::HlCiphertext(HL_COMPRESSED_SEEDED_CT_TEST),
+            TestMetadata::HlCiphertext(HL_COMPRESSED_CT_MODSWITCHED_TEST),
         ]
     }
 }
