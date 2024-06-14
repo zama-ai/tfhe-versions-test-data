@@ -184,10 +184,54 @@ impl TestType for HlClientKeyTest {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct HlServerKeyTest {
+    pub test_filename: Cow<'static, str>,
+    pub client_key_filename: Cow<'static, str>,
+    pub compressed: bool,
+}
+
+impl TestType for HlServerKeyTest {
+    fn module(&self) -> String {
+        HL_MODULE_NAME.to_string()
+    }
+
+    fn target_type(&self) -> String {
+        "ServerKey".to_string()
+    }
+
+    fn test_filename(&self) -> String {
+        self.test_filename.to_string()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct HlPublicKeyTest {
+    pub test_filename: Cow<'static, str>,
+    pub client_key_filename: Cow<'static, str>,
+    pub compressed: bool,
+    pub compact: bool,
+}
+
+impl TestType for HlPublicKeyTest {
+    fn module(&self) -> String {
+        HL_MODULE_NAME.to_string()
+    }
+
+    fn target_type(&self) -> String {
+        "PublicKey".to_string()
+    }
+
+    fn test_filename(&self) -> String {
+        self.test_filename.to_string()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct HlCiphertextTest {
     pub test_filename: Cow<'static, str>,
     pub key_filename: Cow<'static, str>,
     pub compressed: bool,
+    pub compact: bool,
     pub clear_value: u64,
 }
 
@@ -207,10 +251,15 @@ impl TestType for HlCiphertextTest {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum TestMetadata {
+    // Shortint
     ShortintCiphertext(ShortintCiphertextTest),
     ShortintClientKey(ShortintClientKeyTest),
+
+    // Hl
     HlCiphertext(HlCiphertextTest),
     HlClientKey(HlClientKeyTest),
+    HlServerKey(HlServerKeyTest),
+    HlPublicKey(HlPublicKeyTest),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
