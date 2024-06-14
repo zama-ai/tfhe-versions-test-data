@@ -187,6 +187,7 @@ impl TestType for HlClientKeyTest {
 pub struct HlCiphertextTest {
     pub test_filename: Cow<'static, str>,
     pub key_filename: Cow<'static, str>,
+    pub compressed: bool,
     pub clear_value: u64,
 }
 
