@@ -22,9 +22,10 @@ use tfhe_0_6::{
     ClientKey, CompactFheUint8, CompactPublicKey, CompressedCompactPublicKey, CompressedFheUint8,
     CompressedPublicKey, CompressedServerKey, ConfigBuilder, FheUint8, PublicKey,
 };
+use tfhe_versionable::Versionize;
 
 use crate::{
-    generate::{store_versioned_test, TfhersVersion, VALID_TEST_PARAMS},
+    generate::{save_cbor, store_versioned_test, TfhersVersion, VALID_TEST_PARAMS},
     HlCiphertextTest, HlClientKeyTest, HlPublicKeyTest, HlServerKeyTest, ShortintCiphertextTest,
     ShortintClientKeyTest, TestMetadata, TestParameterSet, HL_MODULE_NAME, SHORTINT_MODULE_NAME,
 };
@@ -90,41 +91,41 @@ const HL_CLIENTKEY_TEST: HlClientKeyTest = HlClientKeyTest {
 
 const HL_SERVERKEY_TEST: HlServerKeyTest = HlServerKeyTest {
     test_filename: Cow::Borrowed("server_key"),
-    client_key_filename: Cow::Borrowed("client_key"),
+    client_key_filename: Cow::Borrowed("client_key.cbor"),
     compressed: false,
 };
 
 const HL_COMPRESSED_SERVERKEY_TEST: HlServerKeyTest = HlServerKeyTest {
     test_filename: Cow::Borrowed("compressed_server_key"),
-    client_key_filename: Cow::Borrowed("client_key"),
+    client_key_filename: Cow::Borrowed("client_key.cbor"),
     compressed: true,
 };
 
 // We use a client key with specific parmeters for the pubkey since it can be very large
 const HL_PUBKEY_TEST: HlPublicKeyTest = HlPublicKeyTest {
     test_filename: Cow::Borrowed("public_key"),
-    client_key_filename: Cow::Borrowed("client_key_for_pubkey"),
+    client_key_filename: Cow::Borrowed("client_key_for_pubkey.cbor"),
     compressed: false,
     compact: false,
 };
 
 const HL_COMPRESSED_PUBKEY_TEST: HlPublicKeyTest = HlPublicKeyTest {
     test_filename: Cow::Borrowed("compressed_public_key"),
-    client_key_filename: Cow::Borrowed("client_key"),
+    client_key_filename: Cow::Borrowed("client_key.cbor"),
     compressed: true,
     compact: false,
 };
 
 const HL_COMPACT_PUBKEY_TEST: HlPublicKeyTest = HlPublicKeyTest {
     test_filename: Cow::Borrowed("compact_public_key"),
-    client_key_filename: Cow::Borrowed("client_key"),
+    client_key_filename: Cow::Borrowed("client_key.cbor"),
     compressed: false,
     compact: true,
 };
 
 const HL_COMPRESSED_COMPACT_PUBKEY_TEST: HlPublicKeyTest = HlPublicKeyTest {
     test_filename: Cow::Borrowed("compressed_compact_public_key"),
-    client_key_filename: Cow::Borrowed("client_key"),
+    client_key_filename: Cow::Borrowed("client_key.cbor"),
     compressed: true,
     compact: true,
 };
@@ -244,11 +245,11 @@ impl TfhersVersion for V0_6 {
             &HL_COMPRESSED_SERVERKEY_TEST.test_filename,
         );
         store_versioned_test(&pub_key, &dir, &HL_PUBKEY_TEST.test_filename);
-        store_versioned_test(
-            &client_key_for_pk,
-            &dir,
-            &HL_PUBKEY_TEST.client_key_filename,
+        save_cbor(
+            &client_key_for_pk.versionize(),
+            dir.join(&*HL_PUBKEY_TEST.client_key_filename),
         );
+
         store_versioned_test(
             &compressed_pub_key,
             &dir,
