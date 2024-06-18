@@ -1,12 +1,13 @@
 use core::f64;
 use std::{
     borrow::Cow,
-    fmt::Display,
     path::{Path, PathBuf},
 };
 
 #[cfg(feature = "load")]
 use semver::{Version, VersionReq};
+#[cfg(feature = "load")]
+use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
@@ -14,7 +15,6 @@ use serde::{Deserialize, Serialize};
 pub mod data_0_6;
 #[cfg(feature = "generate")]
 pub mod generate;
-
 #[cfg(feature = "load")]
 pub mod load;
 
@@ -60,39 +60,6 @@ pub fn data_dir<P: AsRef<Path>>(root: P) -> PathBuf {
     path
 }
 
-pub struct TestFailure {
-    module: String,
-    target_type: String,
-    test_filename: String,
-    source_error: String,
-}
-
-impl Display for TestFailure {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Test: {}::{} in file {}: FAILED: {}",
-            self.module, self.target_type, self.test_filename, self.source_error
-        )
-    }
-}
-
-pub struct TestSuccess {
-    module: String,
-    target_type: String,
-    test_filename: String,
-}
-
-impl Display for TestSuccess {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Test: {}::{} using file {}: SUCCESS",
-            self.module, self.target_type, self.test_filename
-        )
-    }
-}
-
 pub trait TestType {
     /// The tfhe-rs module where this type reside
     fn module(&self) -> String;
@@ -104,20 +71,24 @@ pub trait TestType {
     /// (they will be infered)
     fn test_filename(&self) -> String;
 
-    fn success(&self) -> TestSuccess {
-        TestSuccess {
+    #[cfg(feature = "load")]
+    fn success(&self, format: load::DataFormat) -> load::TestSuccess {
+        load::TestSuccess {
             module: self.module(),
             target_type: self.target_type(),
             test_filename: self.test_filename(),
+            format,
         }
     }
 
-    fn failure<E: Display>(&self, error: E) -> TestFailure {
-        TestFailure {
+    #[cfg(feature = "load")]
+    fn failure<E: Display>(&self, error: E, format: load::DataFormat) -> load::TestFailure {
+        load::TestFailure {
             module: self.module(),
             target_type: self.target_type(),
             test_filename: self.test_filename(),
             source_error: format!("{}", error),
+            format,
         }
     }
 }
@@ -272,7 +243,7 @@ pub struct Testcase {
 impl Testcase {
     #[cfg(feature = "load")]
     pub fn is_valid_for_version(&self, version: &str) -> bool {
-        let tfhe_version = Version::parse(&version).unwrap();
+        let tfhe_version = Version::parse(version).unwrap();
 
         let req = format!(">={}", self.tfhe_version_min);
         let min_version = VersionReq::parse(&req).unwrap();
