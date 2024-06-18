@@ -48,6 +48,17 @@ pub const INVALID_TEST_PARAMS: TestParameterSet = TestParameterSet {
     encryption_key_choice: Cow::Borrowed("big"),
 };
 
+pub fn save_cbor<Data: Serialize, P: AsRef<Path>>(msg: &Data, path: P) {
+    let mut file = File::create(path).unwrap();
+    ciborium::ser::into_writer(msg, &mut file).unwrap();
+}
+
+pub fn save_bcode<Data: Serialize, P: AsRef<Path>>(msg: &Data, path: P) {
+    let mut file = File::create(path).unwrap();
+    let options = bincode::DefaultOptions::new().with_fixint_encoding();
+    options.serialize_into(&mut file, msg).unwrap();
+}
+
 /// Stores the test data in `dir`, encoded in both cbor and bincode
 pub fn store_versioned_test<Data: Versionize, P: AsRef<Path>>(
     msg: &Data,
@@ -58,16 +69,11 @@ pub fn store_versioned_test<Data: Versionize, P: AsRef<Path>>(
 
     // Store in cbor
     let filename_cbor = format!("{}.cbor", test_filename);
-    let mut cbor_file = File::create(dir.as_ref().join(filename_cbor)).unwrap();
-    ciborium::ser::into_writer(&versioned, &mut cbor_file).unwrap();
+    save_cbor(&versioned, dir.as_ref().join(filename_cbor));
 
     // Store in bincode
     let filename_bincode = format!("{}.bcode", test_filename);
-    let mut bincode_file = File::create(dir.as_ref().join(filename_bincode)).unwrap();
-    let options = bincode::DefaultOptions::new().with_fixint_encoding();
-    options
-        .serialize_into(&mut bincode_file, &versioned)
-        .unwrap();
+    save_bcode(&versioned, dir.as_ref().join(filename_bincode));
 }
 
 pub fn store_metadata<Meta: Serialize, P: AsRef<Path>>(value: &Meta, path: P) {
