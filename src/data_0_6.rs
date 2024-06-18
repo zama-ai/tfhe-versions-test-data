@@ -19,15 +19,19 @@ use tfhe_0_6::{
         CarryModulus, CiphertextModulus, ClassicPBSParameters, EncryptionKeyChoice, MaxNoiseLevel,
         MessageModulus, PBSParameters,
     },
-    ClientKey, CompactFheUint8, CompactPublicKey, CompressedCompactPublicKey, CompressedFheUint8,
-    CompressedPublicKey, CompressedServerKey, ConfigBuilder, FheUint8, PublicKey,
+    ClientKey, CompactFheBool, CompactFheBoolList, CompactFheInt8, CompactFheInt8List,
+    CompactFheUint8, CompactFheUint8List, CompactPublicKey, CompressedCompactPublicKey,
+    CompressedFheBool, CompressedFheInt8, CompressedFheUint8, CompressedPublicKey,
+    CompressedServerKey, ConfigBuilder, FheBool, FheInt8, FheUint8, PublicKey,
 };
 use tfhe_versionable::Versionize;
 
 use crate::{
     generate::{save_cbor, store_versioned_test, TfhersVersion, VALID_TEST_PARAMS},
-    HlCiphertextTest, HlClientKeyTest, HlPublicKeyTest, HlServerKeyTest, ShortintCiphertextTest,
-    ShortintClientKeyTest, TestMetadata, TestParameterSet, HL_MODULE_NAME, SHORTINT_MODULE_NAME,
+    HlBoolCiphertextListTest, HlBoolCiphertextTest, HlCiphertextListTest, HlCiphertextTest,
+    HlClientKeyTest, HlPublicKeyTest, HlServerKeyTest, HlSignedCiphertextListTest,
+    HlSignedCiphertextTest, ShortintCiphertextTest, ShortintClientKeyTest, TestMetadata,
+    TestParameterSet, HL_MODULE_NAME, SHORTINT_MODULE_NAME,
 };
 
 impl From<TestParameterSet> for ClassicPBSParameters {
@@ -137,6 +141,7 @@ const HL_CT1_TEST: HlCiphertextTest = HlCiphertextTest {
     compact: false,
     clear_value: 0,
 };
+
 const HL_CT2_TEST: HlCiphertextTest = HlCiphertextTest {
     test_filename: Cow::Borrowed("ct2"),
     key_filename: Cow::Borrowed("client_key.cbor"),
@@ -167,6 +172,104 @@ const HL_COMPRESSED_CT_MODSWITCHED_TEST: HlCiphertextTest = HlCiphertextTest {
     compressed: true,
     compact: false,
     clear_value: 255,
+};
+
+const HL_CT_LIST_TEST: HlCiphertextListTest = HlCiphertextListTest {
+    test_filename: Cow::Borrowed("ct_list"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    clear_values: Cow::Borrowed(&[0, 255]),
+};
+
+const HL_SIGNED_CT1_TEST: HlSignedCiphertextTest = HlSignedCiphertextTest {
+    test_filename: Cow::Borrowed("ct1_signed"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: false,
+    compact: false,
+    clear_value: 0,
+};
+
+const HL_SIGNED_CT2_TEST: HlSignedCiphertextTest = HlSignedCiphertextTest {
+    test_filename: Cow::Borrowed("ct2_signed"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: false,
+    compact: false,
+    clear_value: -127,
+};
+
+const HL_SIGNED_COMPACT_CT_TEST: HlSignedCiphertextTest = HlSignedCiphertextTest {
+    test_filename: Cow::Borrowed("ct_compact_signed"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: false,
+    compact: true,
+    clear_value: 255,
+};
+
+const HL_SIGNED_CT_LIST_TEST: HlSignedCiphertextListTest = HlSignedCiphertextListTest {
+    test_filename: Cow::Borrowed("ct_list_signed"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    clear_values: Cow::Borrowed(&[-127, 0, 127]),
+};
+
+const HL_SIGNED_COMPRESSED_SEEDED_CT_TEST: HlSignedCiphertextTest = HlSignedCiphertextTest {
+    test_filename: Cow::Borrowed("ct_compressed_seeded_signed"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: true,
+    compact: false,
+    clear_value: 255,
+};
+
+const HL_SIGNED_COMPRESSED_CT_MODSWITCHED_TEST: HlSignedCiphertextTest = HlSignedCiphertextTest {
+    test_filename: Cow::Borrowed("ct_compressed_modswitched_signed"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: true,
+    compact: false,
+    clear_value: 255,
+};
+
+const HL_BOOL1_TEST: HlBoolCiphertextTest = HlBoolCiphertextTest {
+    test_filename: Cow::Borrowed("bool1"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: false,
+    compact: false,
+    clear_value: true,
+};
+
+const HL_BOOL2_TEST: HlBoolCiphertextTest = HlBoolCiphertextTest {
+    test_filename: Cow::Borrowed("bool2"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: false,
+    compact: false,
+    clear_value: false,
+};
+
+const HL_COMPACT_BOOL_TEST: HlBoolCiphertextTest = HlBoolCiphertextTest {
+    test_filename: Cow::Borrowed("compact_bool"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: false,
+    compact: true,
+    clear_value: true,
+};
+
+const HL_COMPRESSED_BOOL_SEEDED_TEST: HlBoolCiphertextTest = HlBoolCiphertextTest {
+    test_filename: Cow::Borrowed("compressed_seeded_bool"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: true,
+    compact: false,
+    clear_value: true,
+};
+
+const HL_COMPRESSED_BOOL_MODSWITCHED_TEST: HlBoolCiphertextTest = HlBoolCiphertextTest {
+    test_filename: Cow::Borrowed("compressed_modswitched_bool"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    compressed: true,
+    compact: false,
+    clear_value: true,
+};
+
+const HL_BOOL_LIST_TEST: HlBoolCiphertextListTest = HlBoolCiphertextListTest {
+    test_filename: Cow::Borrowed("bool_list"),
+    key_filename: Cow::Borrowed("client_key.cbor"),
+    clear_values: Cow::Borrowed(&[true, false, true]),
 };
 
 pub struct V0_6;
@@ -272,10 +375,22 @@ impl TfhersVersion for V0_6 {
         let ct1 = FheUint8::encrypt(HL_CT1_TEST.clear_value, &hl_client_key);
         let ct2 = FheUint8::encrypt(HL_CT2_TEST.clear_value, &hl_client_key);
 
+        let ct1_signed = FheInt8::encrypt(HL_SIGNED_CT1_TEST.clear_value, &hl_client_key);
+        let ct2_signed = FheInt8::encrypt(HL_SIGNED_CT2_TEST.clear_value, &hl_client_key);
+
+        let bool1 = FheBool::encrypt(HL_BOOL1_TEST.clear_value, &hl_client_key);
+        let bool2 = FheBool::encrypt(HL_BOOL2_TEST.clear_value, &hl_client_key);
+
         // Generate compressed ciphertexts
         // The first one using seeded (default) method
         let compressed_ct1 =
             CompressedFheUint8::encrypt(HL_COMPRESSED_SEEDED_CT_TEST.clear_value, &hl_client_key);
+        let compressed_ct1_signed = CompressedFheInt8::encrypt(
+            HL_SIGNED_COMPRESSED_SEEDED_CT_TEST.clear_value,
+            &hl_client_key,
+        );
+        let compressed_bool1 =
+            CompressedFheBool::encrypt(HL_COMPRESSED_BOOL_SEEDED_TEST.clear_value, &hl_client_key);
 
         // The second one using the modulus switched method
         let compressed_ct2 = FheUint8::encrypt(
@@ -283,9 +398,28 @@ impl TfhersVersion for V0_6 {
             &hl_client_key,
         )
         .compress();
+        let compressed_ct2_signed = FheInt8::encrypt(
+            HL_SIGNED_COMPRESSED_CT_MODSWITCHED_TEST.clear_value,
+            &hl_client_key,
+        )
+        .compress();
+        let compressed_bool2 = CompressedFheBool::encrypt(
+            HL_COMPRESSED_BOOL_MODSWITCHED_TEST.clear_value,
+            &hl_client_key,
+        );
 
         // Generates a compact ct
         let compact_ct = CompactFheUint8::encrypt(HL_COMPACT_CT_TEST.clear_value, &compact_pub_key);
+        let compact_ct_signed =
+            CompactFheInt8::encrypt(HL_SIGNED_COMPACT_CT_TEST.clear_value, &compact_pub_key);
+        let compact_bool =
+            CompactFheBool::encrypt(HL_COMPACT_BOOL_TEST.clear_value, &compact_pub_key);
+
+        let ct_list = CompactFheUint8List::encrypt(&HL_CT_LIST_TEST.clear_values, &compact_pub_key);
+        let ct_list_signed =
+            CompactFheInt8List::encrypt(&HL_SIGNED_CT_LIST_TEST.clear_values, &compact_pub_key);
+        let bool_list =
+            CompactFheBoolList::encrypt(&HL_BOOL_LIST_TEST.clear_values, &compact_pub_key);
 
         // Serialize them
         store_versioned_test(&ct1, &dir, &HL_CT1_TEST.test_filename);
@@ -301,6 +435,41 @@ impl TfhersVersion for V0_6 {
             &HL_COMPRESSED_CT_MODSWITCHED_TEST.test_filename,
         );
         store_versioned_test(&compact_ct, &dir, &HL_COMPACT_CT_TEST.test_filename);
+        store_versioned_test(&ct_list, &dir, &HL_CT_LIST_TEST.test_filename);
+
+        store_versioned_test(&ct1_signed, &dir, &HL_SIGNED_CT1_TEST.test_filename);
+        store_versioned_test(&ct2_signed, &dir, &HL_SIGNED_CT2_TEST.test_filename);
+        store_versioned_test(
+            &compressed_ct1_signed,
+            &dir,
+            &HL_SIGNED_COMPRESSED_SEEDED_CT_TEST.test_filename,
+        );
+        store_versioned_test(
+            &compressed_ct2_signed,
+            &dir,
+            &HL_SIGNED_COMPRESSED_CT_MODSWITCHED_TEST.test_filename,
+        );
+        store_versioned_test(
+            &compact_ct_signed,
+            &dir,
+            &HL_SIGNED_COMPACT_CT_TEST.test_filename,
+        );
+        store_versioned_test(&ct_list_signed, &dir, &HL_SIGNED_CT_LIST_TEST.test_filename);
+
+        store_versioned_test(&bool1, &dir, &HL_BOOL1_TEST.test_filename);
+        store_versioned_test(&bool2, &dir, &HL_BOOL2_TEST.test_filename);
+        store_versioned_test(
+            &compressed_bool1,
+            &dir,
+            &HL_COMPRESSED_BOOL_SEEDED_TEST.test_filename,
+        );
+        store_versioned_test(
+            &compressed_bool2,
+            &dir,
+            &HL_COMPRESSED_BOOL_MODSWITCHED_TEST.test_filename,
+        );
+        store_versioned_test(&compact_bool, &dir, &HL_COMPACT_BOOL_TEST.test_filename);
+        store_versioned_test(&bool_list, &dir, &HL_BOOL_LIST_TEST.test_filename);
 
         vec![
             TestMetadata::HlClientKey(HL_CLIENTKEY_TEST),
@@ -315,6 +484,19 @@ impl TfhersVersion for V0_6 {
             TestMetadata::HlCiphertext(HL_COMPRESSED_SEEDED_CT_TEST),
             TestMetadata::HlCiphertext(HL_COMPRESSED_CT_MODSWITCHED_TEST),
             TestMetadata::HlCiphertext(HL_COMPACT_CT_TEST),
+            TestMetadata::HlCiphertextList(HL_CT_LIST_TEST),
+            TestMetadata::HlSignedCiphertext(HL_SIGNED_CT1_TEST),
+            TestMetadata::HlSignedCiphertext(HL_SIGNED_CT2_TEST),
+            TestMetadata::HlSignedCiphertext(HL_SIGNED_COMPRESSED_SEEDED_CT_TEST),
+            TestMetadata::HlSignedCiphertext(HL_SIGNED_COMPRESSED_CT_MODSWITCHED_TEST),
+            TestMetadata::HlSignedCiphertext(HL_SIGNED_COMPACT_CT_TEST),
+            TestMetadata::HlSignedCiphertextList(HL_SIGNED_CT_LIST_TEST),
+            TestMetadata::HlBoolCiphertext(HL_BOOL1_TEST),
+            TestMetadata::HlBoolCiphertext(HL_BOOL2_TEST),
+            TestMetadata::HlBoolCiphertext(HL_COMPRESSED_BOOL_SEEDED_TEST),
+            TestMetadata::HlBoolCiphertext(HL_COMPRESSED_BOOL_MODSWITCHED_TEST),
+            TestMetadata::HlBoolCiphertext(HL_COMPACT_BOOL_TEST),
+            TestMetadata::HlBoolCiphertextList(HL_BOOL_LIST_TEST),
         ]
     }
 }
