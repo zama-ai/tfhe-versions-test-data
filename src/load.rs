@@ -7,14 +7,26 @@ use std::{
 use bincode::{DefaultOptions, Options};
 use serde::de::DeserializeOwned;
 
-use crate::Testcase;
+use crate::{TestType, Testcase};
 
 /// Loads auxiliary data that might be needed for a test (eg: a key to test a ciphertext)
 pub fn load_versioned_auxiliary<Data: DeserializeOwned, P: AsRef<Path>>(
     path: P,
 ) -> Result<Data, String> {
-    let file = File::open(path).map_err(|e| format!("{}", e))?;
-    ciborium::de::from_reader(file).map_err(|e| format!("{}", e))
+    let file = File::open(path.as_ref()).map_err(|e| {
+        format!(
+            "Failed to read auxiliary file {}: {}",
+            path.as_ref().display(),
+            e
+        )
+    })?;
+    ciborium::de::from_reader(file).map_err(|e| {
+        format!(
+            "Failed to parse auxiliary file {}: {}",
+            path.as_ref().display(),
+            e
+        )
+    })
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -30,31 +42,79 @@ impl Display for DataFormat {
 }
 
 impl DataFormat {
+    pub fn extension(&self) -> &'static str {
+        match self {
+            DataFormat::Cbor => "cbor",
+            DataFormat::Bincode => "bcode",
+        }
+    }
+
     /// Loads the file that should be tested
-    pub fn load_versioned_test<Data: DeserializeOwned, P: AsRef<Path>>(
+    pub fn load_versioned_test<Data: DeserializeOwned, P: AsRef<Path>, T: TestType>(
         self,
         dir: P,
-        test_filename: &str,
-    ) -> Result<Data, String> {
+        test: &T,
+    ) -> Result<Data, TestFailure> {
+        let filename = format!("{}.{}", test.test_filename(), self.extension());
+        let file = File::open(dir.as_ref().join(filename))
+            .map_err(|e| test.failure(format!("Failed to read testcase: {}", e), self))?;
+
         match self {
-            Self::Cbor => {
-                let filename_cbor = format!("{}.cbor", test_filename);
-                let file =
-                    File::open(dir.as_ref().join(filename_cbor)).map_err(|e| format!("{}", e))?;
-                ciborium::de::from_reader(file).map_err(|e| format!("{}", e))
-            }
+            Self::Cbor => ciborium::de::from_reader(file).map_err(|e| test.failure(e, self)),
             Self::Bincode => {
-                let filename_bincode = format!("{}.bcode", test_filename);
-                let file = File::open(dir.as_ref().join(filename_bincode))
-                    .map_err(|e| format!("{}", e))?;
                 let options = DefaultOptions::new().with_fixint_encoding();
-                options.deserialize_from(file).map_err(|e| format!("{}", e))
+                options
+                    .deserialize_from(file)
+                    .map_err(|e| test.failure(e, self))
             }
         }
     }
 }
 
+pub struct TestFailure {
+    pub(crate) module: String,
+    pub(crate) target_type: String,
+    pub(crate) test_filename: String,
+    pub(crate) source_error: String,
+    pub(crate) format: DataFormat,
+}
+
+impl Display for TestFailure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Test: {}::{} in file {}.{}: FAILED: {}",
+            self.module,
+            self.target_type,
+            self.test_filename,
+            self.format.extension(),
+            self.source_error
+        )
+    }
+}
+
+pub struct TestSuccess {
+    pub(crate) module: String,
+    pub(crate) target_type: String,
+    pub(crate) test_filename: String,
+    pub(crate) format: DataFormat,
+}
+
+impl Display for TestSuccess {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Test: {}::{} using file {}.{}: SUCCESS",
+            self.module,
+            self.target_type,
+            self.test_filename,
+            self.format.extension(),
+        )
+    }
+}
+
 pub fn load_tests_metadata<P: AsRef<Path>>(path: P) -> Result<Vec<Testcase>, String> {
-    let serialized = fs::read_to_string(path).map_err(|e| format!("{}", e))?;
-    ron::from_str(&serialized).map_err(|e| format!("{}", e))
+    let serialized =
+        fs::read_to_string(path).map_err(|e| format!("Failed to load test metadata: {}", e))?;
+    ron::from_str(&serialized).map_err(|e| format!("Invalid test metadata: {}", e))
 }

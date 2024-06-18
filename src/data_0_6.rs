@@ -224,7 +224,7 @@ impl TfhersVersion for V0_6 {
 
         // Here we use specific parameters to generate a smaller public key.
         // WARNING: these parameters are completely insecure
-        let mut params_pk = PARAM_MESSAGE_1_CARRY_1_PBS_KS.clone();
+        let mut params_pk = PARAM_MESSAGE_1_CARRY_1_PBS_KS;
         params_pk.lwe_dimension = LweDimension(10);
         let client_key_for_pk =
             ClientKey::generate(ConfigBuilder::with_custom_parameters(params_pk, None).build());
