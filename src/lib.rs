@@ -212,7 +212,116 @@ impl TestType for HlCiphertextTest {
     }
 
     fn target_type(&self) -> String {
-        "Ciphertext".to_string()
+        "FheUint".to_string()
+    }
+
+    fn test_filename(&self) -> String {
+        self.test_filename.to_string()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct HlSignedCiphertextTest {
+    pub test_filename: Cow<'static, str>,
+    pub key_filename: Cow<'static, str>,
+    pub compressed: bool,
+    pub compact: bool,
+    pub clear_value: i64,
+}
+
+impl TestType for HlSignedCiphertextTest {
+    fn module(&self) -> String {
+        HL_MODULE_NAME.to_string()
+    }
+
+    fn target_type(&self) -> String {
+        "FheInt".to_string()
+    }
+
+    fn test_filename(&self) -> String {
+        self.test_filename.to_string()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct HlBoolCiphertextTest {
+    pub test_filename: Cow<'static, str>,
+    pub key_filename: Cow<'static, str>,
+    pub compressed: bool,
+    pub compact: bool,
+    pub clear_value: bool,
+}
+
+impl TestType for HlBoolCiphertextTest {
+    fn module(&self) -> String {
+        HL_MODULE_NAME.to_string()
+    }
+
+    fn target_type(&self) -> String {
+        "FheBool".to_string()
+    }
+
+    fn test_filename(&self) -> String {
+        self.test_filename.to_string()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct HlCiphertextListTest {
+    pub test_filename: Cow<'static, str>,
+    pub key_filename: Cow<'static, str>,
+    pub clear_values: Cow<'static, [u64]>,
+}
+
+impl TestType for HlCiphertextListTest {
+    fn module(&self) -> String {
+        HL_MODULE_NAME.to_string()
+    }
+
+    fn target_type(&self) -> String {
+        "FheUintList".to_string()
+    }
+
+    fn test_filename(&self) -> String {
+        self.test_filename.to_string()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct HlSignedCiphertextListTest {
+    pub test_filename: Cow<'static, str>,
+    pub key_filename: Cow<'static, str>,
+    pub clear_values: Cow<'static, [i64]>,
+}
+
+impl TestType for HlSignedCiphertextListTest {
+    fn module(&self) -> String {
+        HL_MODULE_NAME.to_string()
+    }
+
+    fn target_type(&self) -> String {
+        "FheIntList".to_string()
+    }
+
+    fn test_filename(&self) -> String {
+        self.test_filename.to_string()
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct HlBoolCiphertextListTest {
+    pub test_filename: Cow<'static, str>,
+    pub key_filename: Cow<'static, str>,
+    pub clear_values: Cow<'static, [bool]>,
+}
+
+impl TestType for HlBoolCiphertextListTest {
+    fn module(&self) -> String {
+        HL_MODULE_NAME.to_string()
+    }
+
+    fn target_type(&self) -> String {
+        "FheBoolList".to_string()
     }
 
     fn test_filename(&self) -> String {
@@ -228,6 +337,11 @@ pub enum TestMetadata {
 
     // Hl
     HlCiphertext(HlCiphertextTest),
+    HlSignedCiphertext(HlSignedCiphertextTest),
+    HlBoolCiphertext(HlBoolCiphertextTest),
+    HlCiphertextList(HlCiphertextListTest),
+    HlSignedCiphertextList(HlSignedCiphertextListTest),
+    HlBoolCiphertextList(HlBoolCiphertextListTest),
     HlClientKey(HlClientKeyTest),
     HlServerKey(HlServerKeyTest),
     HlPublicKey(HlPublicKeyTest),
