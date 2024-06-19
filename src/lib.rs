@@ -4,10 +4,12 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use load::TestSkipped;
 #[cfg(feature = "load")]
 use semver::{Version, VersionReq};
 #[cfg(feature = "load")]
 use std::fmt::Display;
+use strum::Display;
 
 use serde::{Deserialize, Serialize};
 
@@ -329,7 +331,7 @@ impl TestType for HlBoolCiphertextListTest {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Display)]
 pub enum TestMetadata {
     // Shortint
     ShortintCiphertext(ShortintCiphertextTest),
@@ -354,8 +356,8 @@ pub struct Testcase {
     pub metadata: TestMetadata,
 }
 
+#[cfg(feature = "load")]
 impl Testcase {
-    #[cfg(feature = "load")]
     pub fn is_valid_for_version(&self, version: &str) -> bool {
         let tfhe_version = Version::parse(version).unwrap();
 
@@ -363,5 +365,12 @@ impl Testcase {
         let min_version = VersionReq::parse(&req).unwrap();
 
         min_version.matches(&tfhe_version)
+    }
+
+    pub fn skip(&self) -> TestSkipped {
+        TestSkipped {
+            module: self.tfhe_module.to_string(),
+            test_name: self.metadata.to_string(),
+        }
     }
 }

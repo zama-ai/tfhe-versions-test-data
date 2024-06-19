@@ -71,6 +71,30 @@ impl DataFormat {
     }
 }
 
+pub enum TestResult {
+    Success(TestSuccess),
+    Failure(TestFailure),
+    Skipped(TestSkipped),
+}
+
+impl From<Result<TestSuccess, TestFailure>> for TestResult {
+    fn from(value: Result<TestSuccess, TestFailure>) -> Self {
+        match value {
+            Ok(success) => Self::Success(success),
+            Err(failure) => Self::Failure(failure),
+        }
+    }
+}
+
+impl TestResult {
+    pub fn is_failure(&self) -> bool {
+        match self {
+            TestResult::Failure(_) => true,
+            TestResult::Success(_) | TestResult::Skipped(_) => false,
+        }
+    }
+}
+
 pub struct TestFailure {
     pub(crate) module: String,
     pub(crate) target_type: String,
@@ -110,6 +134,17 @@ impl Display for TestSuccess {
             self.test_filename,
             self.format.extension(),
         )
+    }
+}
+
+pub struct TestSkipped {
+    pub(crate) module: String,
+    pub(crate) test_name: String,
+}
+
+impl Display for TestSkipped {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Test: {}::{}: SKIPPED", self.module, self.test_name)
     }
 }
 
