@@ -367,7 +367,7 @@ impl Testcase {
     }
 
     pub fn skip(&self) -> load::TestSkipped {
-        TestSkipped {
+        load::TestSkipped {
             module: self.tfhe_module.to_string(),
             test_name: self.metadata.to_string(),
         }
