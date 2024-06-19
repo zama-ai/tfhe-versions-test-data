@@ -4,7 +4,6 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use load::TestSkipped;
 #[cfg(feature = "load")]
 use semver::{Version, VersionReq};
 #[cfg(feature = "load")]
@@ -367,7 +366,7 @@ impl Testcase {
         min_version.matches(&tfhe_version)
     }
 
-    pub fn skip(&self) -> TestSkipped {
+    pub fn skip(&self) -> load::TestSkipped {
         TestSkipped {
             module: self.tfhe_module.to_string(),
             test_name: self.metadata.to_string(),
