@@ -30,7 +30,3 @@ default = ["generate"]
 
 generate = ["dep:tfhe_0_6", "dep:tfhe-versionable"]
 load = ["dep:semver"]
-
-[patch.crates-io]
-tfhe_0_6 = { git = "https://github.com/zama-ai/tfhe-rs.git", branch = "ns/0.6/hl_intid_notversioned", package = "tfhe" }
-tfhe-versionable = { git = "https://github.com/zama-ai/tfhe-rs.git", branch = "ns/0.6/hl_intid_notversioned" }
